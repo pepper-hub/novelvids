@@ -34,3 +34,8 @@ export async function updateNovel(
 export async function deleteNovel(id: string): Promise<void> {
   await api.delete(`/novels/${id}`)
 }
+
+export async function extractChapters(id: string): Promise<Novel> {
+  const response = await api.post(`/novels/${id}/extract-chapters`)
+  return response.data
+}

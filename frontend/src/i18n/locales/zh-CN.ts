@@ -155,10 +155,13 @@ export default {
         title: '小说管理',
         myNovels: '我的小说',
         uploadNovel: '上传小说',
+        uploadTxt: '上传 TXT',
+        insertIntoContent: '插入到内容',
         novelTitle: '小说标题',
         author: '作者',
         status: '状态',
         chapters: '章节',
+        scenes: '场景',
         createdAt: '创建时间',
         updatedAt: '更新时间',
         actions: '操作',
@@ -192,6 +195,23 @@ export default {
         },
     },
 
+    chapters: {
+        title: '章节列表',
+        chapter: '第 {number} 章',
+        untitled: '无标题',
+        noContent: '无内容',
+        editChapter: '编辑章节',
+        delete: '删除章节',
+        deleteConfirm: '确定要删除这一章吗？',
+        reorderSuccess: '章节排序更新成功',
+        reorderFailed: '章节排序更新失败',
+        chapterTitle: '章节标题',
+        enterChapterTitle: '请输入章节标题',
+        chapterContent: '章节内容',
+        enterChapterContent: '请输入章节内容',
+        edit: '编辑章节',
+    },
+
     generate: {
         title: '生成视频',
         selectNovel: '选择小说',
@@ -221,6 +241,9 @@ export default {
         promptPlaceholder: '描述你想要生成的图像...',
         negativePromptPlaceholder: '描述要避免的内容...',
         generatedImage: '生成的图像',
+        processingNovel: '处理中...',
+        processNovelSuccess: '章节提取成功',
+        processNovelError: '章节提取失败',
     },
 
     settings: {

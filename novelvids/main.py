@@ -55,6 +55,24 @@ def create_app() -> FastAPI:
         add_exception_handlers=True,
     )
 
+    # Register exception handlers
+    from fastapi.exceptions import RequestValidationError
+    from tortoise.exceptions import DoesNotExist, IntegrityError
+    from novelvids.api.exceptions import AppException
+    from novelvids.api.handlers import (
+        app_exception_handler,
+        global_exception_handler,
+        validation_exception_handler,
+        integrity_error_handler,
+        does_not_exist_handler,
+    )
+
+    app.add_exception_handler(AppException, app_exception_handler)
+    app.add_exception_handler(RequestValidationError, validation_exception_handler)
+    app.add_exception_handler(IntegrityError, integrity_error_handler)
+    app.add_exception_handler(DoesNotExist, does_not_exist_handler)
+    app.add_exception_handler(Exception, global_exception_handler)
+
     return app
 
 

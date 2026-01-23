@@ -33,6 +33,11 @@ export interface Chapter {
   createdAt: string
 }
 
+export interface ChapterDetail extends Chapter {
+  content: string
+  metadata: Record<string, unknown>
+}
+
 export interface Character {
   id: string
   novelId: string

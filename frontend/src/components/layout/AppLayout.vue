@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores'
 import AppSidebar from './AppSidebar.vue'
 import AppHeader from './AppHeader.vue'
 
 const authStore = useAuthStore()
-const router = useRouter()
 
 const sidebarOpen = ref(true)
 const isAuthenticated = computed(() => authStore.isAuthenticated)

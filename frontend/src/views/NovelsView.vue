@@ -2,9 +2,9 @@
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useNovelStore } from '@/stores'
+import { getStatusColor } from '@/utils/status'
 
 const { t } = useI18n()
-
 const novelStore = useNovelStore()
 
 const showCreateModal = ref(false)
@@ -13,6 +13,49 @@ const newNovel = ref({
   content: '',
   author: '',
 })
+
+// upload file modal and helpers
+const showUploadModal = ref(false)
+const filePreview = ref('')
+const fileName = ref('')
+const fileInput = ref<HTMLInputElement | null>(null)
+
+function handleFileChange(e: Event) {
+  const target = e.target as HTMLInputElement
+  const f = target.files && target.files[0]
+  if (!f) return
+  fileName.value = f.name
+  const reader = new FileReader()
+  reader.onload = () => {
+    filePreview.value = String(reader.result || '')
+    showUploadModal.value = true
+  }
+  reader.readAsText(f)
+  // reset input so same file can be picked again
+  target.value = ''
+}
+
+function confirmInsert() {
+  newNovel.value.content = filePreview.value
+  showUploadModal.value = false
+}
+
+function cancelUpload() {
+  filePreview.value = ''
+  fileName.value = ''
+  showUploadModal.value = false
+}
+
+function openFilePicker() {
+  const el = fileInput.value
+  if (el && typeof (el as any).click === 'function') {
+    ;(el as any).click()
+  } else {
+    // element not ready yet
+    // eslint-disable-next-line no-console
+    console.warn('file input not ready')
+  }
+}
 
 onMounted(() => {
   novelStore.fetchNovels()
@@ -31,17 +74,6 @@ async function handleCreate(): Promise<void> {
   newNovel.value = { title: '', content: '', author: '' }
 }
 
-function getStatusColor(status: string): string {
-  const colors: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-    queued: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-    running: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
-    completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-    failed: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-    cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
-  }
-  return colors[status] || colors.pending
-}
 </script>
 
 <template>
@@ -92,9 +124,9 @@ function getStatusColor(status: string): string {
         </div>
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">{{ novel.title }}</h3>
         <p v-if="novel.author" class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t('common.byAuthor', { author: novel.author }) }}</p>
-        <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-          <span>{{ novel.totalChapters }} {{ t('novels.chapters') }}</span>
-          <span>{{ novel.processedChapters }} {{ t('novels.processedChapters') }}</span>
+          <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+          <span>{{ novel.totalChapters ?? novel.total_chapters }} {{ t('novels.chapters') }}</span>
+          <span>{{ novel.processedChapters ?? novel.processed_chapters }} {{ t('novels.processedChapters') }}</span>
         </div>
       </router-link>
     </div>
@@ -113,12 +145,18 @@ function getStatusColor(status: string): string {
           </div>
           <div>
             <label class="label">{{ t('novels.content') }}</label>
-            <textarea
-              v-model="newNovel.content"
-              class="input min-h-[200px]"
-              :placeholder="t('novels.content')"
-              required
-            ></textarea>
+            <div class="flex items-end gap-3">
+              <textarea
+                v-model="newNovel.content"
+                class="input min-h-[200px] flex-1"
+                :placeholder="t('novels.content')"
+                required
+              ></textarea>
+              <div class="flex flex-col gap-2">
+                <input ref="fileInput" type="file" accept=".txt" class="hidden" @change="handleFileChange" />
+                <button type="button" @click="openFilePicker" class="btn-secondary">{{ t('novels.uploadTxt') || '上传 TXT' }}</button>
+              </div>
+            </div>
           </div>
           <div class="flex gap-3 justify-end">
             <button type="button" @click="showCreateModal = false" class="btn-secondary">{{ t('common.cancel') }}</button>
@@ -127,5 +165,29 @@ function getStatusColor(status: string): string {
         </form>
       </div>
     </div>
+    
+    <!-- Upload preview/confirm modal -->
+    <div v-if="showUploadModal" class="fixed inset-0 z-60 flex items-center justify-center bg-black/60 fixed-modal">
+      <div class="card w-full max-w-2xl mx-4 p-6">
+        <h3 class="text-lg font-semibold mb-2">{{ fileName }}</h3>
+        <div class="max-h-64 overflow-auto bg-gray-50 p-3 rounded mb-4 whitespace-pre-wrap">{{ filePreview }}</div>
+        <div class="flex justify-end gap-3">
+          <button type="button" @click="cancelUpload" class="btn-secondary">{{ t('common.cancel') }}</button>
+          <button type="button" @click="confirmInsert" class="btn-primary">{{ t('novels.insertIntoContent') || '插入到内容' }}</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
+
+<style>
+/* Override spacing so modals fully cover (remove top margin between visible siblings) */
+.space-y-6 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0 !important;
+}
+
+/* Ensure upload modal sits above create modal and covers fully */
+.fixed-modal {
+  z-index: 9999;
+}
+</style>

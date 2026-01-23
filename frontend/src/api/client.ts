@@ -44,6 +44,18 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
+    // Extract backend error message if available
+    if (error.response?.data) {
+      const data = error.response.data as any
+      if (data.message) {
+        error.message = data.message
+      }
+      if (data.code) {
+        // @ts-ignore
+        error.code = data.code
+      }
+    }
+
     // 如果失败的请求是刷新端点，不重试
     if (originalRequest.url?.includes('/auth/refresh')) {
       localStorage.removeItem('access_token')

@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from novelvids.api.dependencies import (
     get_current_user_id,
+    get_chapter_repository,
     get_novel_repository,
 )
 from novelvids.application.dto import (
@@ -16,7 +17,19 @@ from novelvids.application.dto import (
     NovelUpdateDTO,
     PaginatedResponseDTO,
 )
-from novelvids.infrastructure.database.repositories import TortoiseNovelRepository
+from novelvids.domain.services.nlp.service import ChapterRecognitionService
+from novelvids.domain.services.nlp.strategies import RegexChapterRecognitionStrategy
+from novelvids.infrastructure.database.models import TaskStatus
+from novelvids.infrastructure.database.repositories import (
+    TortoiseChapterRepository,
+    TortoiseNovelRepository,
+)
+from novelvids.api.exceptions import (
+    BadRequestException,
+    NotFoundException,
+    PermissionDeniedException,
+    ConflictException,
+)
 
 router = APIRouter(prefix="/novels", tags=["小说"])
 
@@ -68,9 +81,9 @@ async def get_novel(
     """根据 ID 获取特定小说。"""
     novel = await novel_repo.get_by_id(novel_id)
     if novel is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="小说不存在")
+        raise NotFoundException(code="NOVEL_NOT_FOUND", message="Novel not found")
     if novel.user_id != user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="拒绝访问")
+        raise PermissionDeniedException(code="PERMISSION_DENIED", message="Access denied")
     return NovelDetailDTO.model_validate(novel)
 
 
@@ -84,9 +97,9 @@ async def update_novel(
     """更新小说。"""
     novel = await novel_repo.get_by_id(novel_id)
     if novel is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="小说不存在")
+        raise NotFoundException(code="NOVEL_NOT_FOUND", message="Novel not found")
     if novel.user_id != user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="拒绝访问")
+        raise PermissionDeniedException(code="PERMISSION_DENIED", message="Access denied")
 
     update_data = data.model_dump(exclude_unset=True)
     updated = await novel_repo.update(novel_id, update_data)
@@ -102,8 +115,70 @@ async def delete_novel(
     """删除小说。"""
     novel = await novel_repo.get_by_id(novel_id)
     if novel is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="小说不存在")
+        raise NotFoundException(code="NOVEL_NOT_FOUND", message="Novel not found")
     if novel.user_id != user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="拒绝访问")
+        raise PermissionDeniedException(code="PERMISSION_DENIED", message="Access denied")
 
     await novel_repo.delete(novel_id)
+
+
+@router.post("/{novel_id}/extract-chapters", response_model=NovelResponseDTO)
+async def extract_chapters(
+    novel_id: UUID,
+    user_id: Annotated[UUID, Depends(get_current_user_id)],
+    novel_repo: Annotated[TortoiseNovelRepository, Depends(get_novel_repository)],
+    chapter_repo: Annotated[TortoiseChapterRepository, Depends(get_chapter_repository)],
+):
+    """提取小说章节。"""
+    novel = await novel_repo.get_by_id(novel_id)
+    if novel is None:
+        raise NotFoundException(code="NOVEL_NOT_FOUND", message="Novel not found")
+    if novel.user_id != user_id:
+        raise PermissionDeniedException(code="PERMISSION_DENIED", message="Access denied")
+
+    if novel.status == TaskStatus.RUNNING:
+        raise ConflictException(code="NOVEL_PROCESSING", message="Novel is already being processed")
+
+    # 更新状态为运行中
+    novel.status = TaskStatus.RUNNING
+    await novel.save()
+
+    try:
+        # 使用 NLP 服务识别章节
+        service = ChapterRecognitionService(RegexChapterRecognitionStrategy())
+        parsed_chapters = service.process_novel(novel.content)
+
+        # 如果没有识别到章节，默认整个小说作为一个章节
+        if not parsed_chapters:
+            parsed_chapters = [
+                type("ParsedChapterResult", (), {
+                    "title": "第一章",
+                    "content": novel.content,
+                    "start_index": 0,
+                    "end_index": len(novel.content),
+                    "confidence": 1.0
+                })()
+            ]
+
+        # 创建章节记录
+        for idx, chapter_result in enumerate(parsed_chapters):
+            await chapter_repo.create(
+                novel_id=novel.id,
+                number=idx + 1,
+                title=chapter_result.title,
+                content=chapter_result.content,
+            )
+
+        # 更新小说的总章节数和状态
+        await novel.update_from_dict({
+            "total_chapters": len(parsed_chapters),
+            "status": TaskStatus.COMPLETED
+        })
+        await novel.save()
+
+    except Exception as e:
+        novel.status = TaskStatus.FAILED
+        await novel.save()
+        raise e
+
+    return NovelResponseDTO.model_validate(novel)

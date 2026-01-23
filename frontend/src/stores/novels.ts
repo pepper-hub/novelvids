@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { Novel, NovelDetail, PaginatedResponse } from '@/types'
-import { getNovels, getNovel, createNovel, updateNovel, deleteNovel } from '@/api'
+import { getNovels, getNovel, createNovel, updateNovel, deleteNovel, extractChapters } from '@/api'
 
 export const useNovelStore = defineStore('novels', () => {
   const novels = ref<Novel[]>([])
@@ -47,12 +47,27 @@ export const useNovelStore = defineStore('novels', () => {
     if (index !== -1) {
       novels.value[index] = updated
     }
+    if (currentNovel.value?.id === id) {
+      currentNovel.value = { ...currentNovel.value, ...updated }
+    }
     return updated
   }
 
   async function removeNovel(id: string): Promise<void> {
     await deleteNovel(id)
     novels.value = novels.value.filter((n) => n.id !== id)
+  }
+
+  async function processNovel(id: string): Promise<Novel> {
+    const updated = await extractChapters(id)
+    const index = novels.value.findIndex((n) => n.id === id)
+    if (index !== -1) {
+      novels.value[index] = updated
+    }
+    if (currentNovel.value?.id === id) {
+      currentNovel.value = { ...currentNovel.value, ...updated }
+    }
+    return updated
   }
 
   return {
@@ -67,5 +82,6 @@ export const useNovelStore = defineStore('novels', () => {
     addNovel,
     editNovel,
     removeNovel,
+    processNovel,
   }
 })

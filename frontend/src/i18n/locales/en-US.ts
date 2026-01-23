@@ -155,10 +155,13 @@ export default {
         title: 'Novel Management',
         myNovels: 'My Novels',
         uploadNovel: 'Upload Novel',
+        uploadTxt: 'Upload TXT',
+        insertIntoContent: 'Insert into Content',
         novelTitle: 'Novel Title',
         author: 'Author',
         status: 'Status',
         chapters: 'Chapters',
+        scenes: 'Scenes',
         createdAt: 'Created At',
         updatedAt: 'Updated At',
         actions: 'Actions',
@@ -192,6 +195,23 @@ export default {
         },
     },
 
+    chapters: {
+        title: 'Chapters',
+        chapter: 'Chapter {number}',
+        untitled: 'Untitled',
+        noContent: 'No content',
+        editChapter: 'Edit Chapter',
+        delete: 'Delete Chapter',
+        deleteConfirm: 'Are you sure you want to delete this chapter?',
+        reorderSuccess: 'Chapter order updated successfully',
+        reorderFailed: 'Failed to update chapter order',
+        chapterTitle: 'Chapter Title',
+        enterChapterTitle: 'Enter chapter title',
+        chapterContent: 'Chapter Content',
+        enterChapterContent: 'Enter chapter content',
+        edit: 'Edit Chapter',
+    },
+
     generate: {
         title: 'Generate Video',
         selectNovel: 'Select Novel',
@@ -221,6 +241,9 @@ export default {
         promptPlaceholder: 'Describe the image you want to generate...',
         negativePromptPlaceholder: 'What to avoid in the image...',
         generatedImage: 'Generated image',
+        processingNovel: 'Processing...',
+        processNovelSuccess: 'Chapter extraction successful',
+        processNovelError: 'Chapter extraction failed',
     },
 
     settings: {
