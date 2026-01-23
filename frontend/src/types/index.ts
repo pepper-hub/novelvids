@@ -12,6 +12,7 @@ export interface Novel {
   title: string
   author: string | null
   status: TaskStatus
+  workflowStatus: WorkflowStatus
   totalChapters: number
   processedChapters: number
   createdAt: string
@@ -21,6 +22,11 @@ export interface Novel {
 export interface NovelDetail extends Novel {
   content: string
   metadata: Record<string, unknown>
+  // 工作流状态检查
+  canExtractChapters: boolean
+  canExtractCharacters: boolean
+  canCreateStoryboard: boolean
+  canGenerateVideo: boolean
 }
 
 export interface Chapter {
@@ -76,6 +82,7 @@ export interface Video {
 }
 
 export type TaskStatus = 'pending' | 'queued' | 'running' | 'completed' | 'failed' | 'cancelled'
+export type WorkflowStatus = 'draft' | 'chapters_extracted' | 'characters_extracted' | 'storyboard_ready' | 'generating' | 'completed'
 export type Gender = 'male' | 'female' | 'other'
 export type VoiceProvider = 'edge_tts' | 'azure' | 'openai' | 'fish_speech' | 'custom'
 
@@ -104,3 +111,6 @@ export interface DashboardStats {
   balance: number
   recent_novels: Novel[]
 }
+
+// Re-export chapter processing types
+export * from './chapter-processing'

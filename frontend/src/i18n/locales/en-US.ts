@@ -185,6 +185,8 @@ export default {
         male: 'Male',
         female: 'Female',
         other: 'Other',
+        goToProcessing: 'Process Chapters',
+        startCharacterExtraction: 'Start Character Extraction',
         novelStatus: {
             pending: 'Pending',
             queued: 'Queued',
@@ -192,6 +194,19 @@ export default {
             completed: 'Completed',
             failed: 'Failed',
             cancelled: 'Cancelled',
+        },
+        workflowStatus: {
+            draft: 'Draft',
+            chapters_extracted: 'Chapters Extracted',
+            characters_extracted: 'Characters Extracted',
+            storyboard_ready: 'Storyboard Ready',
+            generating: 'Generating',
+            completed: 'Completed',
+        },
+        workflowHints: {
+            needChapters: 'Please process the novel to extract chapters first',
+            needCharacters: 'Please extract characters before proceeding',
+            canProcessChapters: 'Ready to process chapters',
         },
     },
 
@@ -293,5 +308,64 @@ export default {
         updateSuccess: 'Update successful',
         createSuccess: 'Create successful',
         saveSuccess: 'Save successful',
+    },
+
+    chapterProcessing: {
+        title: 'Chapter Processing',
+        chaptersCount: '{count} chapters',
+        novelNotFound: 'Novel not found',
+
+        workflow: {
+            title: 'Workflow',
+            extraction: 'Character Extraction',
+            storyboard: 'Storyboard',
+            generation: 'Video Generation',
+            comingSoon: 'Coming soon...',
+        },
+
+        extraction: {
+            title: 'Character Extraction',
+            description: 'Automatically identify characters, alias relationships, and visual descriptions from chapters',
+            startExtraction: 'Start Extraction',
+            processing: 'Processing...',
+            extractionComplete: 'Character extraction complete',
+            extractionFailed: 'Extraction failed',
+            processedChapters: 'Processed Chapters',
+            identifiedEntities: 'Identified Entities',
+            aliasRelations: 'Alias Relations',
+            noCharactersYet: 'No characters extracted yet',
+            startHint: 'Click "Start Extraction" to automatically identify characters from chapters',
+        },
+
+        assets: {
+            title: 'Character Asset Library',
+            summary: '{total} assets: {persons} characters, {objects} objects',
+            person: 'Character',
+            object: 'Object',
+            updatedAtChapter: 'Updated at Chapter {chapter}',
+            noAliases: 'No aliases',
+            baseTraits: 'Base Traits',
+            noDescription: 'No description',
+            latestState: 'Latest State (Chapter {chapter})',
+            allAliases: 'All Aliases',
+            edit: 'Edit',
+            viewPrompt: 'View Prompt',
+            noAssets: 'No character assets',
+            noAssetsHint: 'Assets will appear here after character extraction',
+            refresh: 'Refresh',
+            loadFailed: 'Failed to load',
+            editingInProgress: 'Editing {name} - Feature in development',
+        },
+
+        prompts: {
+            title: 'Image Generation Prompt',
+            fullPrompt: 'Full Prompt',
+            stateHistory: 'State History ({count} entries)',
+            chapterNumber: 'Chapter {chapter}',
+            aliasUsed: 'Alias: {alias}',
+            close: 'Close',
+            copyPrompt: 'Copy Prompt',
+            copied: 'Prompt copied to clipboard',
+        },
     },
 }

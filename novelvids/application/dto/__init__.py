@@ -85,6 +85,7 @@ class NovelResponseDTO(BaseDTO):
     title: str
     author: str | None
     status: str
+    workflow_status: str = "draft"
     total_chapters: int
     processed_chapters: int
     created_at: datetime
@@ -96,6 +97,12 @@ class NovelDetailDTO(NovelResponseDTO):
 
     content: str
     metadata: dict[str, Any]
+
+    # 工作流状态检查
+    can_extract_chapters: bool = False
+    can_extract_characters: bool = False
+    can_create_storyboard: bool = False
+    can_generate_video: bool = False
 
 
 # Chapter DTOs
@@ -262,6 +269,75 @@ class ProcessNovelDTO(BaseModel):
     generate_images: bool = True
     generate_audio: bool = True
     generate_video: bool = True
+
+
+# Chapter Processing DTOs
+class ProcessChapterDTO(BaseModel):
+    """DTO for chapter processing request."""
+
+    chapter_id: UUID
+
+
+class ProcessChaptersBatchDTO(BaseModel):
+    """DTO for batch chapter processing request."""
+
+    novel_id: UUID
+    start_chapter: int = Field(default=1, ge=1)
+    end_chapter: int | None = None
+
+
+class VisualStateDTO(BaseDTO):
+    """DTO for character visual state."""
+
+    chapter_number: int
+    alias_used: str
+    current_state: str
+
+
+class CharacterAssetDTO(BaseDTO):
+    """DTO for character asset."""
+
+    canonical_name: str
+    character_type: str
+    base_traits: str
+    aliases: list[str]
+    visual_states: list[VisualStateDTO]
+    last_updated_chapter: int
+
+
+class ExtractedEntityDTO(BaseDTO):
+    """DTO for extracted entity."""
+
+    name: str
+    entity_type: str
+    visual_desc: str
+    action_context: str
+
+
+class AliasRelationDTO(BaseDTO):
+    """DTO for alias relation."""
+
+    alias: str
+    canonical_name: str
+    reason: str
+    chapter_discovered: int
+
+
+class ChapterExtractionResultDTO(BaseDTO):
+    """DTO for chapter extraction result."""
+
+    chapter_number: int
+    entities: list[ExtractedEntityDTO]
+    alias_relations: list[AliasRelationDTO]
+    character_prompts: dict[str, str]
+
+
+class CharacterPromptsDTO(BaseModel):
+    """DTO for character prompts response."""
+
+    novel_id: UUID
+    chapter_number: int | None
+    prompts: dict[str, str]
 
 
 # Pagination

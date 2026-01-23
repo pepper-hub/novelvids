@@ -76,7 +76,7 @@ onMounted(async () => {
               <div>
                 <h3 class="font-medium text-gray-900 dark:text-white">{{ novel.title }}</h3>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {{ novel.totalChapters ?? novel.total_chapters }} {{ t('novels.chapters') }} • {{ novel.processedChapters ?? novel.processed_chapters }} {{ t('novels.processedChapters') }}
+                  {{ novel.totalChapters }} {{ t('novels.chapters') }} • {{ novel.processedChapters }} {{ t('novels.processedChapters') }}
                 </p>
               </div>
               <span 

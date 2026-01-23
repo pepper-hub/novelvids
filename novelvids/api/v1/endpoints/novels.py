@@ -19,7 +19,7 @@ from novelvids.application.dto import (
 )
 from novelvids.domain.services.nlp.service import ChapterRecognitionService
 from novelvids.domain.services.nlp.strategies import RegexChapterRecognitionStrategy
-from novelvids.infrastructure.database.models import TaskStatus
+from novelvids.infrastructure.database.models import TaskStatus, WorkflowStatus
 from novelvids.infrastructure.database.repositories import (
     TortoiseChapterRepository,
     TortoiseNovelRepository,
@@ -84,7 +84,26 @@ async def get_novel(
         raise NotFoundException(code="NOVEL_NOT_FOUND", message="Novel not found")
     if novel.user_id != user_id:
         raise PermissionDeniedException(code="PERMISSION_DENIED", message="Access denied")
-    return NovelDetailDTO.model_validate(novel)
+
+    # 构建包含工作流状态的响应
+    data = {
+        "id": novel.id,
+        "title": novel.title,
+        "author": novel.author,
+        "status": novel.status,
+        "workflow_status": novel.workflow_status,
+        "total_chapters": novel.total_chapters,
+        "processed_chapters": novel.processed_chapters,
+        "created_at": novel.created_at,
+        "updated_at": novel.updated_at,
+        "content": novel.content,
+        "metadata": novel.metadata,
+        "can_extract_chapters": novel.can_extract_chapters(),
+        "can_extract_characters": novel.can_extract_characters(),
+        "can_create_storyboard": novel.can_create_storyboard(),
+        "can_generate_video": novel.can_generate_video(),
+    }
+    return NovelDetailDTO(**data)
 
 
 @router.put("/{novel_id}", response_model=NovelResponseDTO)
@@ -139,6 +158,13 @@ async def extract_chapters(
     if novel.status == TaskStatus.RUNNING:
         raise ConflictException(code="NOVEL_PROCESSING", message="Novel is already being processed")
 
+    # 检查工作流状态
+    if not novel.can_extract_chapters():
+        raise BadRequestException(
+            code="WORKFLOW_STATE_ERROR",
+            message=f"Cannot extract chapters in current workflow state: {novel.workflow_status}"
+        )
+
     # 更新状态为运行中
     novel.status = TaskStatus.RUNNING
     await novel.save()
@@ -172,7 +198,8 @@ async def extract_chapters(
         # 更新小说的总章节数和状态
         await novel.update_from_dict({
             "total_chapters": len(parsed_chapters),
-            "status": TaskStatus.COMPLETED
+            "status": TaskStatus.COMPLETED,
+            "workflow_status": WorkflowStatus.CHAPTERS_EXTRACTED,
         })
         await novel.save()
 

@@ -185,6 +185,8 @@ export default {
         male: '男',
         female: '女',
         other: '其他',
+        goToProcessing: '处理章节',
+        startCharacterExtraction: '开始提取角色',
         novelStatus: {
             pending: '待处理',
             queued: '队列中',
@@ -192,6 +194,19 @@ export default {
             completed: '已完成',
             failed: '失败',
             cancelled: '已取消',
+        },
+        workflowStatus: {
+            draft: '草稿',
+            chapters_extracted: '已分章',
+            characters_extracted: '已提取角色',
+            storyboard_ready: '分镜就绪',
+            generating: '生成中',
+            completed: '已完成',
+        },
+        workflowHints: {
+            needChapters: '请先处理小说以提取章节',
+            needCharacters: '请先提取角色后再进行下一步',
+            canProcessChapters: '可以开始处理章节了',
         },
     },
 
@@ -293,5 +308,64 @@ export default {
         updateSuccess: '更新成功',
         createSuccess: '创建成功',
         saveSuccess: '保存成功',
+    },
+
+    chapterProcessing: {
+        title: '章节处理',
+        chaptersCount: '{count} 章',
+        novelNotFound: '小说不存在',
+
+        workflow: {
+            title: '工作流程',
+            extraction: '角色提取',
+            storyboard: '分镜处理',
+            generation: '视频生成',
+            comingSoon: '功能开发中，敬请期待...',
+        },
+
+        extraction: {
+            title: '角色提取',
+            description: '从章节中自动识别角色、别名关系和视觉描述',
+            startExtraction: '开始提取',
+            processing: '处理中...',
+            extractionComplete: '角色提取完成',
+            extractionFailed: '提取失败',
+            processedChapters: '已处理章节',
+            identifiedEntities: '识别实体',
+            aliasRelations: '别名关系',
+            noCharactersYet: '尚未提取角色',
+            startHint: '点击"开始提取"从章节中自动识别角色信息',
+        },
+
+        assets: {
+            title: '角色资产库',
+            summary: '共 {total} 个资产：{persons} 人物，{objects} 物品',
+            person: '人物',
+            object: '物品',
+            updatedAtChapter: '第 {chapter} 章更新',
+            noAliases: '无别名',
+            baseTraits: '固有属性 (Base Traits)',
+            noDescription: '暂无描述',
+            latestState: '最新状态 (第 {chapter} 章)',
+            allAliases: '所有别名',
+            edit: '编辑',
+            viewPrompt: '查看 Prompt',
+            noAssets: '暂无角色资产',
+            noAssetsHint: '完成角色提取后，资产将显示在这里',
+            refresh: '刷新',
+            loadFailed: '加载失败',
+            editingInProgress: '编辑 {name} - 功能开发中',
+        },
+
+        prompts: {
+            title: '图像生成 Prompt',
+            fullPrompt: '完整 Prompt',
+            stateHistory: '状态历史 ({count} 条)',
+            chapterNumber: '第 {chapter} 章',
+            aliasUsed: '称呼: {alias}',
+            close: '关闭',
+            copyPrompt: '复制 Prompt',
+            copied: 'Prompt 已复制到剪贴板',
+        },
     },
 }

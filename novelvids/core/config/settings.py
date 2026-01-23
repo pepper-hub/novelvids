@@ -115,6 +115,22 @@ class JWTSettings(BaseSettings):
     refresh_token_expire_days: int = Field(default=7)
 
 
+class LLMSettings(BaseSettings):
+    """LLM API configuration settings."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="LLM_",
+        extra="ignore",
+    )
+
+    api_key: str = Field(default="")
+    base_url: str = Field(default="https://api.openai.com/v1")
+    model_name: str = Field(default="gpt-4o-mini")
+    timeout: int = Field(default=60, description="Request timeout in seconds")
+
+
 class Settings(BaseSettings):
     """Application settings."""
 
@@ -135,6 +151,7 @@ class Settings(BaseSettings):
     storage: StorageSettings = Field(default_factory=StorageSettings)
     billing: BillingSettings = Field(default_factory=BillingSettings)
     jwt: JWTSettings = Field(default_factory=JWTSettings)
+    llm: LLMSettings = Field(default_factory=LLMSettings)
 
 
 def get_settings() -> Settings:

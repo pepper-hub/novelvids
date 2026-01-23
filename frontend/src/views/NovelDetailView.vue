@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useInfiniteScroll } from '@vueuse/core'
 import { VueDraggable } from 'vue-draggable-plus'
@@ -11,6 +11,7 @@ import type { ChapterDetail } from '@/types'
 
 const { t } = useI18n()
 const route = useRoute()
+const router = useRouter()
 const novelStore = useNovelStore()
 const chapterStore = useChapterStore()
 const toastStore = useToastStore()
@@ -106,6 +107,20 @@ async function onReorder() {
   }
 }
 
+function goToProcessing(): void {
+  if (!novelStore.currentNovel) return
+
+  // 检查工作流状态 - 必须先提取章节
+  if (!novelStore.currentNovel.canExtractCharacters) {
+    if (novelStore.currentNovel.totalChapters === 0) {
+      toastStore.warning(t('novels.workflowHints.needChapters'))
+    }
+    return
+  }
+
+  router.push(`/novels/${novelStore.currentNovel.id}/processing`)
+}
+
 </script>
 
 <template>
@@ -128,7 +143,7 @@ async function onReorder() {
         </div>
         <button
           @click="handleProcessNovel"
-          :disabled="isProcessing || novelStore.currentNovel.status === 'running' || (novelStore.currentNovel.totalChapters ?? novelStore.currentNovel.total_chapters) > 0"
+          :disabled="isProcessing || novelStore.currentNovel.status === 'running' || (novelStore.currentNovel.totalChapters) > 0"
           class="btn-primary"
         >
           <span v-if="isProcessing" class="flex items-center gap-2">
@@ -153,7 +168,7 @@ async function onReorder() {
           <div class="card p-6">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('chapters.title') }}</h2>
             
-            <div v-if="(novelStore.currentNovel.totalChapters ?? novelStore.currentNovel.total_chapters) === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
+            <div v-if="(novelStore.currentNovel.totalChapters) === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
               <p>{{ t('common.noChaptersExtracted') }}</p>
             </div>
             
@@ -223,19 +238,50 @@ async function onReorder() {
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-500 dark:text-gray-400">{{ t('novels.totalChapters') }}</span>
-                <span class="font-medium text-gray-900 dark:text-white">{{ novelStore.currentNovel.totalChapters ?? novelStore.currentNovel.total_chapters }}</span>
+                <span class="font-medium text-gray-900 dark:text-white">{{ novelStore.currentNovel.totalChapters }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-500 dark:text-gray-400">{{ t('novels.processedChapters') }}</span>
-                <span class="font-medium text-gray-900 dark:text-white">{{ novelStore.currentNovel.processedChapters ?? novelStore.currentNovel.processed_chapters }}</span>
+                <span class="font-medium text-gray-900 dark:text-white">{{ novelStore.currentNovel.processedChapters }}</span>
               </div>
             </div>
           </div>
 
           <div class="card p-6">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('novels.characters') }}</h2>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('novels.characters') }}</h2>
+              <button
+                v-if="novelStore.currentNovel.canExtractCharacters"
+                @click="goToProcessing"
+                class="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
+              >
+                {{ t('novels.goToProcessing') }} &rarr;
+              </button>
+            </div>
             <div class="text-center py-4 text-gray-500 dark:text-gray-400">
-              <p class="text-sm">{{ t('common.noCharactersExtracted') }}</p>
+              <svg class="w-10 h-10 mx-auto text-gray-400 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+
+              <!-- 工作流状态提示 -->
+              <template v-if="novelStore.currentNovel.totalChapters === 0">
+                <p class="text-sm">{{ t('novels.workflowHints.needChapters') }}</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  {{ t('novels.workflowStatus.draft') }}
+                </p>
+              </template>
+              <template v-else-if="novelStore.currentNovel.canExtractCharacters">
+                <p class="text-sm">{{ t('common.noCharactersExtracted') }}</p>
+                <button
+                  @click="goToProcessing"
+                  class="mt-3 px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
+                >
+                  {{ t('novels.startCharacterExtraction') }}
+                </button>
+              </template>
+              <template v-else>
+                <p class="text-sm">{{ t('novels.workflowHints.canProcessChapters') }}</p>
+              </template>
             </div>
           </div>
         </div>

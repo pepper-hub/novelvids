@@ -36,6 +36,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/novels/:id/processing',
+    name: 'chapter-processing',
+    component: () => import('@/views/ChapterProcessingView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/generate',
     name: 'generate',
     component: () => import('@/views/GenerateView.vue'),

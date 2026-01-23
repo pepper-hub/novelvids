@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useNovelStore } from '@/stores'
 import { getStatusColor } from '@/utils/status'
@@ -16,19 +16,38 @@ const newNovel = ref({
 
 // upload file modal and helpers
 const showUploadModal = ref(false)
-const filePreview = ref('')
+const filePreviewSample = ref('') // 只显示预览部分
 const fileName = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
+const isUploading = ref(false)
+
+// 存储完整内容，使用 shallowRef 避免深度响应式追踪
+let fullFileContent = ''
 
 function handleFileChange(e: Event) {
   const target = e.target as HTMLInputElement
   const f = target.files && target.files[0]
   if (!f) return
+  
+  isUploading.value = true
   fileName.value = f.name
+  
   const reader = new FileReader()
   reader.onload = () => {
-    filePreview.value = String(reader.result || '')
+    fullFileContent = String(reader.result || '')
+    // 只预览前 2000 字符，避免大文件卡顿
+    const previewLength = 2000
+    if (fullFileContent.length > previewLength) {
+      filePreviewSample.value = fullFileContent.slice(0, previewLength) + '\n\n... (共 ' + fullFileContent.length + ' 字符)'
+    } else {
+      filePreviewSample.value = fullFileContent
+    }
+    isUploading.value = false
     showUploadModal.value = true
+  }
+  reader.onerror = () => {
+    isUploading.value = false
+    console.error('File read error')
   }
   reader.readAsText(f)
   // reset input so same file can be picked again
@@ -36,12 +55,17 @@ function handleFileChange(e: Event) {
 }
 
 function confirmInsert() {
-  newNovel.value.content = filePreview.value
+  // 使用完整内容，不经过响应式系统
+  newNovel.value.content = fullFileContent
   showUploadModal.value = false
+  // 清理
+  filePreviewSample.value = ''
+  fullFileContent = ''
 }
 
 function cancelUpload() {
-  filePreview.value = ''
+  filePreviewSample.value = ''
+  fullFileContent = ''
   fileName.value = ''
   showUploadModal.value = false
 }
@@ -56,6 +80,15 @@ function openFilePicker() {
     console.warn('file input not ready')
   }
 }
+
+// 大文件内容提示
+const contentLengthHint = computed(() => {
+  const len = newNovel.value.content.length
+  if (len > 10000) {
+    return `已加载 ${(len / 1000).toFixed(1)}K 字符`
+  }
+  return ''
+})
 
 onMounted(() => {
   novelStore.fetchNovels()
@@ -125,8 +158,8 @@ async function handleCreate(): Promise<void> {
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">{{ novel.title }}</h3>
         <p v-if="novel.author" class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t('common.byAuthor', { author: novel.author }) }}</p>
           <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-          <span>{{ novel.totalChapters ?? novel.total_chapters }} {{ t('novels.chapters') }}</span>
-          <span>{{ novel.processedChapters ?? novel.processed_chapters }} {{ t('novels.processedChapters') }}</span>
+          <span>{{ novel.totalChapters }} {{ t('novels.chapters') }}</span>
+          <span>{{ novel.processedChapters }} {{ t('novels.processedChapters') }}</span>
         </div>
       </router-link>
     </div>
@@ -146,12 +179,24 @@ async function handleCreate(): Promise<void> {
           <div>
             <label class="label">{{ t('novels.content') }}</label>
             <div class="flex items-end gap-3">
-              <textarea
-                v-model="newNovel.content"
-                class="input min-h-[200px] flex-1"
-                :placeholder="t('novels.content')"
-                required
-              ></textarea>
+              <div class="flex-1">
+                <!-- 小内容直接编辑 -->
+                <textarea
+                  v-if="newNovel.content.length <= 10000"
+                  v-model="newNovel.content"
+                  class="input min-h-[200px] w-full"
+                  :placeholder="t('novels.content')"
+                  required
+                ></textarea>
+                <!-- 大内容显示摘要 -->
+                <div v-else class="input min-h-[200px] w-full overflow-hidden relative">
+                  <div class="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap line-clamp-6">{{ newNovel.content.slice(0, 500) }}...</div>
+                  <div class="absolute bottom-2 left-3 right-3 flex items-center justify-between">
+                    <span class="text-xs text-gray-500 bg-white dark:bg-gray-800 px-2 py-1 rounded">{{ contentLengthHint }}</span>
+                    <button type="button" @click="newNovel.content = ''; fullFileContent = ''" class="text-xs text-red-500 hover:text-red-600 bg-white dark:bg-gray-800 px-2 py-1 rounded">清除</button>
+                  </div>
+                </div>
+              </div>
               <div class="flex flex-col gap-2">
                 <input ref="fileInput" type="file" accept=".txt" class="hidden" @change="handleFileChange" />
                 <button type="button" @click="openFilePicker" class="btn-secondary">{{ t('novels.uploadTxt') || '上传 TXT' }}</button>
@@ -170,7 +215,11 @@ async function handleCreate(): Promise<void> {
     <div v-if="showUploadModal" class="fixed inset-0 z-60 flex items-center justify-center bg-black/60 fixed-modal">
       <div class="card w-full max-w-2xl mx-4 p-6">
         <h3 class="text-lg font-semibold mb-2">{{ fileName }}</h3>
-        <div class="max-h-64 overflow-auto bg-gray-50 p-3 rounded mb-4 whitespace-pre-wrap">{{ filePreview }}</div>
+        <div class="max-h-64 overflow-auto bg-gray-50 dark:bg-gray-800 p-3 rounded mb-4 whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">{{ filePreviewSample }}</div>
+        <div v-if="isUploading" class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+          <div class="animate-spin w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full"></div>
+          正在读取文件...
+        </div>
         <div class="flex justify-end gap-3">
           <button type="button" @click="cancelUpload" class="btn-secondary">{{ t('common.cancel') }}</button>
           <button type="button" @click="confirmInsert" class="btn-primary">{{ t('novels.insertIntoContent') || '插入到内容' }}</button>
