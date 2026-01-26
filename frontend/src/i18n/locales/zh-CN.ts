@@ -315,6 +315,62 @@ export default {
         chaptersCount: '{count} 章',
         novelNotFound: '小说不存在',
 
+        processing: {
+            extracting: '正在提取角色信息...',
+            extractComplete: '提取完成',
+            processingFailed: '处理失败',
+            batchProcessing: '正在批量处理章节...',
+            taskSubmitted: '任务已提交，正在后台处理...',
+            chaptersProcessed: '已处理 {count} 个章节',
+            submitFailed: '提交失败',
+            loadFailed: '加载失败',
+        },
+
+        sidebar: {
+            title: '章节列表',
+            total: '共 {count} 章',
+            filter: {
+                all: '全部',
+                pending: '待处理',
+                completed: '已完成',
+            },
+            empty: '没有符合条件的章节',
+            chapterNumber: '第 {number} 章',
+            loadFailed: '加载章节失败',
+            noMore: '没有更多章节了',
+            status: {
+                pending: '待处理',
+                charactersExtracted: '已提取',
+                storyboardReady: '分镜就绪',
+                completed: '已完成',
+            },
+        },
+
+        stepPanel: {
+            noSelection: '未选择章节',
+            selectHint: '从左侧列表选择一个章节开始处理',
+            chapterNumber: '第 {number} 章',
+            processing: '处理中...',
+            completed: '已完成',
+            steps: {
+                extractCharacters: {
+                    title: '角色提取',
+                    description: '从章节文本中自动识别角色、别名关系和视觉描述',
+                    action: '提取本章角色',
+                },
+                createStoryboard: {
+                    title: '分镜处理',
+                    description: '将章节内容拆分为场景，生成图像描述和配音文本',
+                    action: '创建分镜',
+                },
+                generateVideo: {
+                    title: '视频生成',
+                    description: '生成场景图像、语音合成并合成最终视频',
+                    action: '生成视频',
+                },
+            },
+        },
+
         workflow: {
             title: '工作流程',
             extraction: '角色提取',
@@ -340,6 +396,7 @@ export default {
         assets: {
             title: '角色资产库',
             summary: '共 {total} 个资产：{persons} 人物，{objects} 物品',
+            characters: '个角色',
             person: '人物',
             object: '物品',
             updatedAtChapter: '第 {chapter} 章更新',

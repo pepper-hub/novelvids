@@ -35,6 +35,7 @@ export interface Chapter {
   number: number
   title: string
   status: TaskStatus
+  workflowStatus: ChapterWorkflowStatus
   sceneCount: number
   createdAt: string
 }
@@ -83,6 +84,7 @@ export interface Video {
 
 export type TaskStatus = 'pending' | 'queued' | 'running' | 'completed' | 'failed' | 'cancelled'
 export type WorkflowStatus = 'draft' | 'chapters_extracted' | 'characters_extracted' | 'storyboard_ready' | 'generating' | 'completed'
+export type ChapterWorkflowStatus = 'pending' | 'characters_extracted' | 'storyboard_ready' | 'generating' | 'completed'
 export type Gender = 'male' | 'female' | 'other'
 export type VoiceProvider = 'edge_tts' | 'azure' | 'openai' | 'fish_speech' | 'custom'
 

@@ -31,7 +31,11 @@ from novelvids.application.dto import (
 from novelvids.application.services.chapter_processing import ChapterProcessingService
 from novelvids.core.config import settings
 from novelvids.domain.services.character_extraction import OpenAICompatibleClient
-from novelvids.infrastructure.database.models import TaskStatus, WorkflowStatus
+from novelvids.infrastructure.database.models import (
+    ChapterWorkflowStatus,
+    TaskStatus,
+    WorkflowStatus,
+)
 from novelvids.infrastructure.database.repositories import (
     TortoiseChapterRepository,
     TortoiseNovelRepository,
@@ -90,8 +94,14 @@ async def process_chapter(
     if result is None:
         raise NotFoundException(code="CHAPTER_NOT_FOUND", message="章节不存在")
 
-    # 更新章节状态
-    await chapter_repo.update(data.chapter_id, {"status": TaskStatus.COMPLETED})
+    # 更新章节状态和工作流状态
+    await chapter_repo.update(
+        data.chapter_id,
+        {
+            "status": TaskStatus.COMPLETED,
+            "workflow_status": ChapterWorkflowStatus.CHARACTERS_EXTRACTED,
+        },
+    )
 
     return ChapterExtractionResultDTO(
         chapter_number=result.chapter_number,

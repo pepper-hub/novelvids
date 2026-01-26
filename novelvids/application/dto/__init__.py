@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class BaseDTO(BaseModel):
@@ -29,12 +29,14 @@ class UserUpdateDTO(BaseModel):
     username: str | None = None
     email: EmailStr | None = None
 
+
 class LoginDTO(BaseModel):
     """DTO for user login."""
 
     username: str
     password: str
-    
+
+
 class UserResponseDTO(BaseDTO):
     """DTO for user response."""
 
@@ -58,7 +60,6 @@ class RefreshTokenDTO(BaseModel):
     """DTO for refresh token request."""
 
     refresh_token: str
-
 
 
 # Novel DTOs
@@ -114,6 +115,7 @@ class ChapterResponseDTO(BaseDTO):
     number: int
     title: str
     status: str
+    workflow_status: str
     scene_count: int
     created_at: datetime
 

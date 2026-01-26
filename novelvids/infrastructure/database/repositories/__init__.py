@@ -13,8 +13,8 @@ from novelvids.domain.repositories import (
     CharacterRepository,
     NovelRepository,
     SceneRepository,
-    UserRepository,
     UsageRecordRepository,
+    UserRepository,
     VideoRepository,
     WorkflowRepository,
 )
@@ -90,6 +90,10 @@ class TortoiseChapterRepository(TortoiseRepository[ChapterModel], ChapterReposit
     """Tortoise ORM implementation of ChapterRepository."""
 
     model_class = ChapterModel
+
+    def _get_queryset(self) -> QuerySet[ChapterModel]:
+        """Override to add default ordering by chapter number."""
+        return self.model_class.all().order_by("number")
 
     async def get_by_novel_id(self, novel_id: UUID) -> list[ChapterModel]:
         return await self.model_class.filter(novel_id=novel_id).order_by("number")

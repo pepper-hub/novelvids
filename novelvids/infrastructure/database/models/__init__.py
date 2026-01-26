@@ -9,11 +9,11 @@ from tortoise.models import Model
 class TaskStatus(StrEnum):
     """任务执行状态。"""
 
-    PENDING = "pending"      # 待处理
-    QUEUED = "queued"        # 已入队
-    RUNNING = "running"      # 运行中
+    PENDING = "pending"  # 待处理
+    QUEUED = "queued"  # 已入队
+    RUNNING = "running"  # 运行中
     COMPLETED = "completed"  # 已完成
-    FAILED = "failed"        # 失败
+    FAILED = "failed"  # 失败
     CANCELLED = "cancelled"  # 已取消
 
 
@@ -32,12 +32,12 @@ class WorkflowStatus(StrEnum):
     - completed: 全部完成
     """
 
-    DRAFT = "draft"                            # 草稿 - 刚上传
+    DRAFT = "draft"  # 草稿 - 刚上传
     CHAPTERS_EXTRACTED = "chapters_extracted"  # 已分章
     CHARACTERS_EXTRACTED = "characters_extracted"  # 已提取角色
-    STORYBOARD_READY = "storyboard_ready"      # 分镜就绪
-    GENERATING = "generating"                  # 生成中
-    COMPLETED = "completed"                    # 已完成
+    STORYBOARD_READY = "storyboard_ready"  # 分镜就绪
+    GENERATING = "generating"  # 生成中
+    COMPLETED = "completed"  # 已完成
 
     @classmethod
     def get_order(cls) -> list["WorkflowStatus"]:
@@ -68,12 +68,54 @@ class WorkflowStatus(StrEnum):
         return None
 
 
+class ChapterWorkflowStatus(StrEnum):
+    """章节工作流状态 - 每章独立的处理状态。
+
+    工作流顺序：
+    pending -> characters_extracted -> storyboard_ready -> generating -> completed
+
+    每章独立处理，完成后才能进行下一步。
+    """
+
+    PENDING = "pending"  # 待处理
+    CHARACTERS_EXTRACTED = "characters_extracted"  # 已提取角色
+    STORYBOARD_READY = "storyboard_ready"  # 分镜就绪
+    GENERATING = "generating"  # 生成中
+    COMPLETED = "completed"  # 已完成
+
+    @classmethod
+    def get_order(cls) -> list["ChapterWorkflowStatus"]:
+        """获取工作流顺序。"""
+        return [
+            cls.PENDING,
+            cls.CHARACTERS_EXTRACTED,
+            cls.STORYBOARD_READY,
+            cls.GENERATING,
+            cls.COMPLETED,
+        ]
+
+    def can_transition_to(self, target: "ChapterWorkflowStatus") -> bool:
+        """检查是否可以转换到目标状态。"""
+        order = self.get_order()
+        current_idx = order.index(self)
+        target_idx = order.index(target)
+        return target_idx == current_idx or target_idx == current_idx + 1
+
+    def get_next(self) -> "ChapterWorkflowStatus | None":
+        """获取下一个状态。"""
+        order = self.get_order()
+        current_idx = order.index(self)
+        if current_idx < len(order) - 1:
+            return order[current_idx + 1]
+        return None
+
+
 class Gender(StrEnum):
     """角色性别。"""
 
-    MALE = "male"      # 男
+    MALE = "male"  # 男
     FEMALE = "female"  # 女
-    OTHER = "other"    # 其他
+    OTHER = "other"  # 其他
 
 
 class VoiceProvider(StrEnum):
@@ -127,9 +169,7 @@ class NovelModel(BaseModel):
         on_delete=fields.CASCADE,
     )
     status = fields.CharEnumField(TaskStatus, default=TaskStatus.PENDING, index=True)
-    workflow_status = fields.CharEnumField(
-        WorkflowStatus, default=WorkflowStatus.DRAFT, index=True
-    )
+    workflow_status = fields.CharEnumField(WorkflowStatus, default=WorkflowStatus.DRAFT, index=True)
     total_chapters = fields.IntField(default=0)
     processed_chapters = fields.IntField(default=0)
     metadata = fields.JSONField(default=dict)
@@ -147,10 +187,7 @@ class NovelModel(BaseModel):
 
     def can_extract_characters(self) -> bool:
         """检查是否可以提取角色。"""
-        return (
-            self.workflow_status == WorkflowStatus.CHAPTERS_EXTRACTED
-            and self.total_chapters > 0
-        )
+        return self.workflow_status == WorkflowStatus.CHAPTERS_EXTRACTED and self.total_chapters > 0
 
     def can_create_storyboard(self) -> bool:
         """检查是否可以创建分镜。"""
@@ -188,6 +225,9 @@ class ChapterModel(BaseModel):
     title = fields.CharField(max_length=255)
     content = fields.TextField()
     status = fields.CharEnumField(TaskStatus, default=TaskStatus.PENDING, index=True)
+    workflow_status = fields.CharEnumField(
+        ChapterWorkflowStatus, default=ChapterWorkflowStatus.PENDING, index=True
+    )
     scene_count = fields.IntField(default=0)
     metadata = fields.JSONField(default=dict)
 
@@ -196,6 +236,18 @@ class ChapterModel(BaseModel):
     class Meta:
         table = "chapters"
         unique_together = (("novel", "number"),)
+
+    def can_extract_characters(self) -> bool:
+        """检查是否可以提取角色。"""
+        return self.workflow_status == ChapterWorkflowStatus.PENDING
+
+    def can_create_storyboard(self) -> bool:
+        """检查是否可以创建分镜。"""
+        return self.workflow_status == ChapterWorkflowStatus.CHARACTERS_EXTRACTED
+
+    def can_generate_video(self) -> bool:
+        """检查是否可以生成视频。"""
+        return self.workflow_status == ChapterWorkflowStatus.STORYBOARD_READY
 
 
 class CharacterModel(BaseModel):

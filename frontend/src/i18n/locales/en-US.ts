@@ -315,6 +315,62 @@ export default {
         chaptersCount: '{count} chapters',
         novelNotFound: 'Novel not found',
 
+        processing: {
+            extracting: 'Extracting character information...',
+            extractComplete: 'Extraction complete',
+            processingFailed: 'Processing failed',
+            batchProcessing: 'Batch processing chapters...',
+            taskSubmitted: 'Task submitted, processing in background...',
+            chaptersProcessed: 'Processed {count} chapters',
+            submitFailed: 'Submit failed',
+            loadFailed: 'Load failed',
+        },
+
+        sidebar: {
+            title: 'Chapters',
+            total: '{count} chapters',
+            filter: {
+                all: 'All',
+                pending: 'Pending',
+                completed: 'Completed',
+            },
+            empty: 'No chapters match the filter',
+            chapterNumber: 'Chapter {number}',
+            loadFailed: 'Failed to load chapters',
+            noMore: 'No more chapters',
+            status: {
+                pending: 'Pending',
+                charactersExtracted: 'Extracted',
+                storyboardReady: 'Storyboard Ready',
+                completed: 'Completed',
+            },
+        },
+
+        stepPanel: {
+            noSelection: 'No Chapter Selected',
+            selectHint: 'Select a chapter from the list to start processing',
+            chapterNumber: 'Chapter {number}',
+            processing: 'Processing...',
+            completed: 'Completed',
+            steps: {
+                extractCharacters: {
+                    title: 'Character Extraction',
+                    description: 'Automatically identify characters, alias relationships, and visual descriptions from text',
+                    action: 'Extract Characters',
+                },
+                createStoryboard: {
+                    title: 'Storyboard Creation',
+                    description: 'Split chapter content into scenes, generate image descriptions and dialogue text',
+                    action: 'Create Storyboard',
+                },
+                generateVideo: {
+                    title: 'Video Generation',
+                    description: 'Generate scene images, synthesize voice, and compose final video',
+                    action: 'Generate Video',
+                },
+            },
+        },
+
         workflow: {
             title: 'Workflow',
             extraction: 'Character Extraction',
@@ -340,6 +396,7 @@ export default {
         assets: {
             title: 'Character Asset Library',
             summary: '{total} assets: {persons} characters, {objects} objects',
+            characters: 'characters',
             person: 'Character',
             object: 'Object',
             updatedAtChapter: 'Updated at Chapter {chapter}',

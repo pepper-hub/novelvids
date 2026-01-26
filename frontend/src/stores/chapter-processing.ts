@@ -19,6 +19,11 @@ import {
   getCharacterAssets,
   getCharacterPrompts,
 } from '@/api'
+import i18n from '@/i18n'
+
+function t(key: string, named?: Record<string, unknown>): string {
+  return i18n.global.t(key, named ?? {})
+}
 
 export const useChapterProcessingStore = defineStore('chapterProcessing', () => {
   // ==================== 状态 ====================
@@ -77,13 +82,13 @@ export const useChapterProcessingStore = defineStore('chapterProcessing', () => 
     isLoading.value = true
     error.value = null
     progress.value.status = 'processing'
-    progress.value.message = '正在提取角色信息...'
+    progress.value.message = t('chapterProcessing.processing.extracting')
 
     try {
       const result = await processChapter(chapterId)
       extractionResults.value.push(result)
       progress.value.status = 'completed'
-      progress.value.message = '提取完成'
+      progress.value.message = t('chapterProcessing.processing.extractComplete')
 
       // 标记提取步骤完成
       if (!workflow.value.completedSteps.includes('extraction')) {
@@ -94,7 +99,7 @@ export const useChapterProcessingStore = defineStore('chapterProcessing', () => 
       return result
     } catch (err) {
       progress.value.status = 'failed'
-      progress.value.message = err instanceof Error ? err.message : '处理失败'
+      progress.value.message = err instanceof Error ? err.message : t('chapterProcessing.processing.processingFailed')
       error.value = progress.value.message
       throw err
     } finally {
@@ -116,7 +121,7 @@ export const useChapterProcessingStore = defineStore('chapterProcessing', () => 
       status: 'processing',
       currentChapter: startChapter,
       totalChapters: endChapter ?? startChapter,
-      message: '正在批量处理章节...',
+      message: t('chapterProcessing.processing.batchProcessing'),
     }
 
     try {
@@ -124,7 +129,7 @@ export const useChapterProcessingStore = defineStore('chapterProcessing', () => 
       extractionResults.value = results
       progress.value.status = 'completed'
       progress.value.currentChapter = results.length
-      progress.value.message = `已处理 ${results.length} 个章节`
+      progress.value.message = t('chapterProcessing.processing.chaptersProcessed', { count: results.length })
 
       // 标记提取步骤完成
       if (!workflow.value.completedSteps.includes('extraction')) {
@@ -135,7 +140,7 @@ export const useChapterProcessingStore = defineStore('chapterProcessing', () => 
       return results
     } catch (err) {
       progress.value.status = 'failed'
-      progress.value.message = err instanceof Error ? err.message : '处理失败'
+      progress.value.message = err instanceof Error ? err.message : t('chapterProcessing.processing.processingFailed')
       error.value = progress.value.message
       throw err
     } finally {
@@ -157,14 +162,14 @@ export const useChapterProcessingStore = defineStore('chapterProcessing', () => 
       status: 'processing',
       currentChapter: 0,
       totalChapters: endChapter ?? 0,
-      message: '任务已提交，正在后台处理...',
+      message: t('chapterProcessing.processing.taskSubmitted'),
     }
 
     try {
       await processChaptersBatchAsync(novelId, startChapter, endChapter)
     } catch (err) {
       progress.value.status = 'failed'
-      progress.value.message = err instanceof Error ? err.message : '提交失败'
+      progress.value.message = err instanceof Error ? err.message : t('chapterProcessing.processing.submitFailed')
       error.value = progress.value.message
       throw err
     } finally {
@@ -182,7 +187,7 @@ export const useChapterProcessingStore = defineStore('chapterProcessing', () => 
     try {
       assets.value = await getCharacterAssets(novelId)
     } catch (err) {
-      error.value = err instanceof Error ? err.message : '加载失败'
+      error.value = err instanceof Error ? err.message : t('chapterProcessing.processing.loadFailed')
       throw err
     } finally {
       isLoading.value = false
@@ -199,7 +204,7 @@ export const useChapterProcessingStore = defineStore('chapterProcessing', () => 
     try {
       prompts.value = await getCharacterPrompts(novelId, chapterNumber)
     } catch (err) {
-      error.value = err instanceof Error ? err.message : '加载失败'
+      error.value = err instanceof Error ? err.message : t('chapterProcessing.processing.loadFailed')
       throw err
     } finally {
       isLoading.value = false

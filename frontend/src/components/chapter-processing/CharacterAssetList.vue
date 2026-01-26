@@ -11,6 +11,7 @@ import CharacterAssetCard from './CharacterAssetCard.vue'
 interface Props {
   assets: CharacterAsset[]
   isLoading?: boolean
+  compact?: boolean
 }
 
 interface Emits {
@@ -21,6 +22,7 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   isLoading: false,
+  compact: false,
 })
 const emit = defineEmits<Emits>()
 const { t } = useI18n()
@@ -46,15 +48,18 @@ const objectCount = computed(() =>
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div :class="compact ? 'space-y-3' : 'space-y-6'">
     <!-- 标题和统计 -->
     <div class="flex items-center justify-between">
       <div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 :class="compact ? 'text-sm font-medium' : 'text-lg font-semibold'" class="text-gray-900 dark:text-white">
           {{ t('chapterProcessing.assets.title') }}
         </h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <p v-if="!compact" class="text-sm text-gray-500 dark:text-gray-400 mt-1">
           {{ t('chapterProcessing.assets.summary', { total: assets.length, persons: personCount, objects: objectCount }) }}
+        </p>
+        <p v-else class="text-xs text-gray-500 dark:text-gray-400">
+          {{ assets.length }} {{ t('chapterProcessing.assets.characters') }}
         </p>
       </div>
       <button
@@ -64,8 +69,7 @@ const objectCount = computed(() =>
         :title="t('chapterProcessing.assets.refresh')"
       >
         <svg
-          class="w-5 h-5"
-          :class="{ 'animate-spin': isLoading }"
+          :class="['w-5 h-5', { 'animate-spin': isLoading }]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -116,14 +120,32 @@ const objectCount = computed(() =>
     </div>
 
     <!-- 资产网格 -->
-    <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <CharacterAssetCard
-        v-for="asset in sortedAssets"
-        :key="asset.canonicalName"
-        :asset="asset"
-        @edit="emit('edit', $event)"
-        @view-prompt="emit('view-prompt', $event)"
-      />
+    <div v-else :class="compact ? 'flex flex-wrap gap-2' : 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'">
+      <template v-if="compact">
+        <!-- Compact 模式：简单标签 -->
+        <div
+          v-for="asset in sortedAssets"
+          :key="asset.canonicalName"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          @click="emit('view-prompt', asset)"
+        >
+          <span v-if="asset.characterType === 'Person'" class="text-amber-500">👤</span>
+          <span v-else class="text-blue-500">📦</span>
+          <span class="text-gray-900 dark:text-white">{{ asset.canonicalName }}</span>
+          <span v-if="asset.aliases.length > 0" class="text-xs text-gray-500 dark:text-gray-400">
+            +{{ asset.aliases.length }}
+          </span>
+        </div>
+      </template>
+      <template v-else>
+        <CharacterAssetCard
+          v-for="asset in sortedAssets"
+          :key="asset.canonicalName"
+          :asset="asset"
+          @edit="emit('edit', $event)"
+          @view-prompt="emit('view-prompt', $event)"
+        />
+      </template>
     </div>
   </div>
 </template>
