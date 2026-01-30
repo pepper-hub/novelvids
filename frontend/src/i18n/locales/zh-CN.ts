@@ -186,6 +186,37 @@ export default {
             negativePrompt: '负面提示词',
         },
 
+        // 编辑器 UI
+        edit: {
+            basicInfo: '基础信息',
+            sceneAsset: '场景资产',
+            change: '更换',
+            selectScene: '+ 选择场景',
+            addCharacterOrItem: '+ 添加人物/物品',
+            selectAsset: '选择资产',
+            noAvailableAssets: '暂无可用资产',
+            dialoguePlaceholder: '角色对话内容...',
+            newShot: '新镜头',
+        },
+
+        // 时间选项
+        timeOfDays: {
+            dawn: '黎明',
+            morning: '早晨',
+            noon: '中午',
+            afternoon: '下午',
+            dusk: '黄昏',
+            night: '夜晚',
+        },
+
+        // 对话语气
+        dialogueTones: {
+            whisper: '耳语',
+            normal: '正常',
+            shout: '喊叫',
+            emotional: '情绪化',
+        },
+
         // 枚举值翻译
         shotSizes: {
             extreme_close_up: '特写',
@@ -272,12 +303,104 @@ export default {
     },
 
     studio: {
-        inspector: '属性检查器',
-        prompt: '提示词',
-        promptPlaceholder: '描述场景...',
+        // 顶部工具栏
+        title: '视频工作室',
+        play: '播放',
+        pause: '暂停',
+        composeVideo: '合成视频',
+        exportSettings: '导出设置',
+
+        // 左侧面板 - 分镜列表
+        shots: '分镜',
+        shotList: '分镜列表',
+        shotNumber: '镜头 {number}',
+        addShot: '添加镜头',
+        noShots: '暂无分镜',
+        noShotsHint: '请先返回分镜页面创建分镜',
+        hasClip: '已生成视频',
+        noClip: '未生成视频',
+        clipsCount: '{count} 个视频',
+
+        // 中间区域 - 预览和素材库
+        preview: '预览',
+        noPreview: '选择分镜以预览',
+        videoGallery: '视频素材库',
+        galleryEmpty: '暂无生成的视频',
+        galleryHint: '点击"生成视频"创建视频片段',
+        selectVideo: '选择',
+        selectedVideo: '已选中',
+        deleteVideo: '删除',
+        deleteConfirm: '确定删除此视频片段？',
+        dragToTimeline: '拖到时间轴',
+
+        // 右侧面板 - 属性
+        properties: '分镜属性',
+        shotInfo: '分镜信息',
+        description: '描述',
+        model: 'AI 模型',
+        modelHint: '选择视频生成模型',
         duration: '时长',
-        regenerate: '重新生成片段',
+        durationSeconds: '{seconds}秒',
+        durationHint: '视频时长（秒）',
+        generate: '生成视频',
+        generating: '生成中...',
+        generateMore: '再生成一个',
+        regenerate: '重新生成',
+
+        // 提示词预览
+        promptPreview: '提示词预览',
+        prompt: '提示词',
+        negativePrompt: '负面提示词',
+        copyPrompt: '复制',
+        promptCopied: '已复制提示词',
+
+        // 时间轴
         timeline: '时间轴',
+        videoTrack: '视频轨道',
+        audioTrack: '音频轨道',
+        timelineEmpty: '从素材库拖动视频到此处排列',
+        clearTimeline: '清空',
+        autoArrange: '自动排列',
+        removeFromTimeline: '移除',
+
+        // 导出弹窗
+        export: {
+            title: '导出设置',
+            format: '格式',
+            resolution: '分辨率',
+            fps: '帧率',
+            includeAudio: '包含音频',
+            estimatedSize: '预计大小',
+            estimatedTime: '预计时间',
+            cancel: '取消',
+            export: '导出视频',
+            exporting: '导出中...',
+        },
+
+        // 合成
+        compose: {
+            title: '合成视频',
+            description: '将所有片段合成为最终视频',
+            noClipsSelected: '请先为每个分镜选择视频',
+            missingClips: '有 {count} 个分镜缺少视频',
+            ready: '准备合成',
+            start: '开始合成',
+            composing: '合成中...',
+            complete: '视频合成成功',
+            failed: '合成失败',
+            download: '下载视频',
+        },
+
+        // 状态消息
+        clipGenerated: '视频片段已生成',
+        clipGenerateFailed: '视频生成失败',
+        clipDeleted: '已删除片段',
+        clipSelected: '已选中该片段',
+        savedToTimeline: '时间轴已保存',
+
+        // 兼容旧版
+        inspector: '属性检查器',
+        promptPlaceholder: '描述场景...',
     },
 
     assets: {
@@ -569,6 +692,7 @@ export default {
         enterChapterContent: '请输入章节内容',
         edit: '编辑章节',
         addChapter: '添加章节',
+        addSplitLens: '添加分镜',
         addManuallyHint: '可以手动添加章节，或从小说内容自动提取',
         createSuccess: '章节创建成功',
         deleteSuccess: '章节删除成功',

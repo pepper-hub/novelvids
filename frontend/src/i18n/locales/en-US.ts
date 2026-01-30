@@ -186,6 +186,37 @@ export default {
             negativePrompt: 'Negative Prompt',
         },
 
+        // Editor UI
+        edit: {
+            basicInfo: 'Basic Info',
+            sceneAsset: 'Scene Asset',
+            change: 'Change',
+            selectScene: '+ Select Scene',
+            addCharacterOrItem: '+ Add Character/Item',
+            selectAsset: 'Select Asset',
+            noAvailableAssets: 'No available assets',
+            dialoguePlaceholder: 'Character dialogue...',
+            newShot: 'New Shot',
+        },
+
+        // Time of day options
+        timeOfDays: {
+            dawn: 'Dawn',
+            morning: 'Morning',
+            noon: 'Noon',
+            afternoon: 'Afternoon',
+            dusk: 'Dusk',
+            night: 'Night',
+        },
+
+        // Dialogue tones
+        dialogueTones: {
+            whisper: 'Whisper',
+            normal: 'Normal',
+            shout: 'Shout',
+            emotional: 'Emotional',
+        },
+
         // Enum translations
         shotSizes: {
             extreme_close_up: 'Extreme Close-up',
@@ -272,12 +303,104 @@ export default {
     },
 
     studio: {
-        inspector: 'Inspector',
-        prompt: 'Prompt',
-        promptPlaceholder: 'Describe the scene...',
+        // Header & Toolbar
+        title: 'Video Studio',
+        play: 'Play',
+        pause: 'Pause',
+        composeVideo: 'Compose Video',
+        exportSettings: 'Export Settings',
+
+        // Left Panel - Shot List
+        shots: 'Shots',
+        shotList: 'Shot List',
+        shotNumber: 'Shot {number}',
+        addShot: 'Add Shot',
+        noShots: 'No shots available',
+        noShotsHint: 'Go back to Storyboard to create shots',
+        hasClip: 'Has video',
+        noClip: 'No video',
+        clipsCount: '{count} clips',
+
+        // Center - Preview & Gallery
+        preview: 'Preview',
+        noPreview: 'Select a shot to preview',
+        videoGallery: 'Video Gallery',
+        galleryEmpty: 'No videos generated yet',
+        galleryHint: 'Click "Generate" to create video clips',
+        selectVideo: 'Select',
+        selectedVideo: 'Selected',
+        deleteVideo: 'Delete',
+        deleteConfirm: 'Delete this video clip?',
+        dragToTimeline: 'Drag to timeline',
+
+        // Right Panel - Properties
+        properties: 'Shot Properties',
+        shotInfo: 'Shot Info',
+        description: 'Description',
+        model: 'AI Model',
+        modelHint: 'Select video generation model',
         duration: 'Duration',
-        regenerate: 'Regenerate Clip',
+        durationSeconds: '{seconds}s',
+        durationHint: 'Video duration in seconds',
+        generate: 'Generate Video',
+        generating: 'Generating...',
+        generateMore: 'Generate More',
+        regenerate: 'Regenerate',
+
+        // Prompt Preview
+        promptPreview: 'Prompt Preview',
+        prompt: 'Prompt',
+        negativePrompt: 'Negative Prompt',
+        copyPrompt: 'Copy',
+        promptCopied: 'Prompt copied',
+
+        // Timeline
         timeline: 'Timeline',
+        videoTrack: 'Video Track',
+        audioTrack: 'Audio Track',
+        timelineEmpty: 'Drag clips from gallery to arrange',
+        clearTimeline: 'Clear',
+        autoArrange: 'Auto Arrange',
+        removeFromTimeline: 'Remove',
+
+        // Export Modal
+        export: {
+            title: 'Export Settings',
+            format: 'Format',
+            resolution: 'Resolution',
+            fps: 'Frame Rate',
+            includeAudio: 'Include Audio',
+            estimatedSize: 'Estimated Size',
+            estimatedTime: 'Estimated Time',
+            cancel: 'Cancel',
+            export: 'Export Video',
+            exporting: 'Exporting...',
+        },
+
+        // Compose
+        compose: {
+            title: 'Compose Video',
+            description: 'Combine all clips into final video',
+            noClipsSelected: 'Please select a clip for each shot first',
+            missingClips: '{count} shots are missing video clips',
+            ready: 'Ready to compose',
+            start: 'Start Composing',
+            composing: 'Composing...',
+            complete: 'Video composed successfully',
+            failed: 'Composition failed',
+            download: 'Download Video',
+        },
+
+        // Status messages
+        clipGenerated: 'Video clip generated',
+        clipGenerateFailed: 'Failed to generate video clip',
+        clipDeleted: 'Clip deleted',
+        clipSelected: 'Clip selected for shot',
+        savedToTimeline: 'Timeline saved',
+
+        // Legacy (for compatibility)
+        inspector: 'Inspector',
+        promptPlaceholder: 'Describe the scene...',
     },
 
     assets: {
@@ -569,6 +692,7 @@ export default {
         enterChapterContent: 'Enter chapter content',
         edit: 'Edit Chapter',
         addChapter: 'Add Chapter',
+        addSplitLens: 'Add Storyboard Shot',
         addManuallyHint: 'You can add chapters manually or extract from novel content',
         createSuccess: 'Chapter created successfully',
         deleteSuccess: 'Chapter deleted successfully',

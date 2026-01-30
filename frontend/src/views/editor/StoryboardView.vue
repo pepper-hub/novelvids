@@ -229,7 +229,7 @@ async function handleDeleteShot(shot: Shot) {
 async function handleAddShot(afterSequence?: number) {
   const newShot: Partial<Shot> = {
     name: `New Shot`,
-    description_cn: '新镜头',
+    description_cn: t('storyboard.edit.newShot'),
     camera: {
       shot_size: 'medium_shot',
       camera_angle: 'eye_level',
@@ -625,7 +625,7 @@ watch([novelId, chapterId], () => {
           class="w-full py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-400 hover:border-primary-500 hover:text-primary-500 transition-colors"
           @click="handleAddShot()"
         >
-          + {{ t('chapters.addChapter') }}
+          + {{ t('chapters.addSplitLens') }}
         </button>
       </div>
     </div>
@@ -737,7 +737,7 @@ watch([novelId, chapterId], () => {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <!-- Basic Info -->
               <div class="space-y-4">
-                <h3 class="font-medium text-gray-900 dark:text-white border-b pb-2">基础信息</h3>
+                <h3 class="font-medium text-gray-900 dark:text-white border-b pb-2">{{ t('storyboard.edit.basicInfo') }}</h3>
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -833,7 +833,7 @@ watch([novelId, chapterId], () => {
                     class="btn-secondary btn-sm"
                     @click="openAssetSelector('subject', ['person', 'item'])"
                   >
-                    + 添加人物/物品
+                    {{ t('storyboard.edit.addCharacterOrItem') }}
                   </button>
                 </div>
 
@@ -867,7 +867,7 @@ watch([novelId, chapterId], () => {
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    场景资产
+                    {{ t('storyboard.edit.sceneAsset') }}
                   </label>
                   <div class="flex items-center gap-2">
                     <span v-if="editForm.environment?.scene_asset_ref" class="px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-sm">
@@ -878,7 +878,7 @@ watch([novelId, chapterId], () => {
                       class="btn-secondary btn-sm"
                       @click="openAssetSelector('environment', ['scene'])"
                     >
-                      {{ editForm.environment?.scene_asset_ref ? '更换' : '+ 选择场景' }}
+                      {{ editForm.environment?.scene_asset_ref ? t('storyboard.edit.change') : t('storyboard.edit.selectScene') }}
                     </button>
                   </div>
                 </div>
@@ -887,7 +887,7 @@ watch([novelId, chapterId], () => {
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {{ t('storyboard.environment.location') }} (English)
                   </label>
-                  <textarea v-model="editForm.environment!.location" rows="2" class="input w-full" placeholder="e.g., A cozy living room with vintage furniture and warm lighting" />
+                  <textarea v-model="editForm.environment!.location" rows="4" class="input w-full" placeholder="e.g., A cozy living room with vintage furniture and warm lighting" />
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -896,12 +896,12 @@ watch([novelId, chapterId], () => {
                       {{ t('storyboard.environment.timeOfDay') }}
                     </label>
                     <select v-model="editForm.environment!.time_of_day" class="input w-full">
-                      <option value="dawn">黎明</option>
-                      <option value="morning">早晨</option>
-                      <option value="noon">中午</option>
-                      <option value="afternoon">下午</option>
-                      <option value="dusk">黄昏</option>
-                      <option value="night">夜晚</option>
+                      <option value="dawn">{{ t('storyboard.timeOfDays.dawn') }}</option>
+                      <option value="morning">{{ t('storyboard.timeOfDays.morning') }}</option>
+                      <option value="noon">{{ t('storyboard.timeOfDays.noon') }}</option>
+                      <option value="afternoon">{{ t('storyboard.timeOfDays.afternoon') }}</option>
+                      <option value="dusk">{{ t('storyboard.timeOfDays.dusk') }}</option>
+                      <option value="night">{{ t('storyboard.timeOfDays.night') }}</option>
                     </select>
                   </div>
                   <div>
@@ -964,7 +964,7 @@ watch([novelId, chapterId], () => {
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {{ t('storyboard.audio.dialogue') }}
                   </label>
-                  <textarea v-model="editForm.audio!.dialogue" rows="2" class="input w-full" placeholder="角色对话内容..." />
+                  <textarea v-model="editForm.audio!.dialogue" rows="2" class="input w-full" :placeholder="t('storyboard.edit.dialoguePlaceholder')" />
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -980,10 +980,10 @@ watch([novelId, chapterId], () => {
                     </label>
                     <select v-model="editForm.audio!.dialogue_tone" class="input w-full">
                       <option value="">-</option>
-                      <option value="whisper">耳语</option>
-                      <option value="normal">正常</option>
-                      <option value="shout">喊叫</option>
-                      <option value="emotional">情绪化</option>
+                      <option value="whisper">{{ t('storyboard.dialogueTones.whisper') }}</option>
+                      <option value="normal">{{ t('storyboard.dialogueTones.normal') }}</option>
+                      <option value="shout">{{ t('storyboard.dialogueTones.shout') }}</option>
+                      <option value="emotional">{{ t('storyboard.dialogueTones.emotional') }}</option>
                     </select>
                   </div>
                 </div>
@@ -1021,7 +1021,7 @@ watch([novelId, chapterId], () => {
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] overflow-hidden flex flex-col">
           <div class="flex-none p-4 border-b border-gray-200 dark:border-gray-700">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-              选择资产
+              {{ t('storyboard.edit.selectAsset') }}
             </h2>
           </div>
 
@@ -1061,7 +1061,7 @@ watch([novelId, chapterId], () => {
             </div>
 
             <div v-if="assets.filter(a => assetSelectorTypes.includes(a.asset_type)).length === 0" class="text-center py-8 text-gray-500">
-              暂无可用资产
+              {{ t('storyboard.edit.noAvailableAssets') }}
             </div>
           </div>
 

@@ -101,7 +101,6 @@ const canGoNext = computed(() => {
   const step = currentStepObj.value
   if (!step) return false
 
-  // Can go to next step if current step is completed
   return getStatusIndex(chapter.workflowStatus) >= getStatusIndex(step.completedStatus)
 })
 
@@ -181,21 +180,17 @@ async function completeCurrentStep(): Promise<void> {
   const step = currentStepObj.value
   if (!chapter || !step) return
 
-  // Check if already completed
   if (getStatusIndex(chapter.workflowStatus) >= getStatusIndex(step.completedStatus)) {
-    // Already completed, just go to next
     await goToNextStep()
     return
   }
 
-  // Update workflow status
   isUpdating.value = true
   try {
     await updateChapterWorkflowStatus(chapterId.value, step.completedStatus)
     await chapterStore.fetchChapter(chapterId.value)
     toastStore.success(t('workflow.stepCompleted'))
 
-    // Navigate to next step if available
     if (nextStep.value) {
       navigateToStep(nextStep.value)
     }
@@ -210,56 +205,48 @@ async function completeCurrentStep(): Promise<void> {
 
 <template>
   <div class="chapter-layout flex flex-col h-full">
-    <!-- Chapter Header -->
-    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+    <!-- Compact Header with Step Indicator -->
+    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2">
+      <div class="flex items-center justify-between gap-4">
+        <!-- Chapter Info (Compact) -->
+        <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white truncate max-w-[200px]">
             {{ chapterStore.currentChapter?.title || t('editor.loading') }}
           </h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ t('workflow.chapter') }} {{ chapterStore.currentChapter?.number }}
-          </p>
-        </div>
-        <div class="text-sm text-gray-500 dark:text-gray-400">
-          {{ t('workflow.status') }}:
-          <span class="font-medium text-primary-600 dark:text-primary-400">
-            {{ chapterStore.currentChapter?.workflowStatus }}
+          <span class="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
+            #{{ chapterStore.currentChapter?.number }}
           </span>
         </div>
-      </div>
-    </header>
 
-    <!-- Step Indicator -->
-    <div class="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-      <div class="flex items-center justify-center">
-        <div class="flex items-center space-x-4">
+        <!-- Step Indicator (Inline) -->
+        <div class="flex items-center gap-1 flex-1 justify-center overflow-x-auto">
           <template v-for="(step, index) in steps" :key="step.key">
-            <!-- Step -->
+            <!-- Step Button -->
             <button
               type="button"
               :disabled="!isStepAccessible(step.key)"
+              :title="step.name"
               :class="[
-                'flex items-center gap-2 px-4 py-2 rounded-lg transition-all',
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all text-sm whitespace-nowrap',
                 isStepActive(step.key)
                   ? 'bg-primary-600 text-white'
                   : isStepCompleted(step.key)
                     ? 'bg-green-100 dark:bg-green-600/20 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-600/30'
                     : isStepAccessible(step.key)
-                      ? 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed',
+                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      : 'bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed',
               ]"
               @click="navigateToStep(step)"
             >
               <!-- Step Icon -->
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="step.icon" />
               </svg>
-              <span class="font-medium">{{ step.name }}</span>
+              <span class="font-medium hidden sm:inline">{{ step.name }}</span>
               <!-- Completed Check -->
               <svg
                 v-if="isStepCompleted(step.key) && !isStepActive(step.key)"
-                class="w-4 h-4 text-green-600 dark:text-green-400"
+                class="w-3.5 h-3.5 text-green-600 dark:text-green-400 flex-shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -269,75 +256,74 @@ async function completeCurrentStep(): Promise<void> {
             </button>
 
             <!-- Connector -->
-            <div
+            <svg
               v-if="index < steps.length - 1"
               :class="[
-                'w-8 h-0.5 transition-colors',
-                isStepCompleted(step.key) ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600',
+                'w-4 h-4 flex-shrink-0',
+                isStepCompleted(step.key) ? 'text-green-500' : 'text-gray-300 dark:text-gray-600',
               ]"
-            />
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
           </template>
         </div>
+
+        <!-- Navigation Buttons (Compact) -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <!-- Previous Button -->
+          <button
+            v-if="canGoPrevious"
+            type="button"
+            class="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            :title="previousStep?.name"
+            @click="goToPreviousStep"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <!-- Next/Complete Button -->
+          <button
+            v-if="nextStep"
+            type="button"
+            :disabled="isUpdating"
+            :class="[
+              'flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+              canGoNext 
+                ? 'bg-primary-600 text-white hover:bg-primary-700' 
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600',
+            ]"
+            @click="canGoNext ? goToNextStep() : completeCurrentStep()"
+          >
+            <span v-if="isUpdating" class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-current" />
+            <template v-else>
+              <span class="hidden sm:inline">{{ canGoNext ? t('workflow.next') : t('workflow.completeStep') }}</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </template>
+          </button>
+          <span v-else class="text-green-600 dark:text-green-400 text-sm font-medium flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span class="hidden sm:inline">{{ t('workflow.completed') }}</span>
+          </span>
+        </div>
       </div>
-    </div>
+    </header>
 
     <!-- Content -->
     <main class="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
       <div v-if="isLoading" class="flex items-center justify-center h-full">
         <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500" />
       </div>
-      <div v-else class="h-full flex flex-col">
-        <!-- Main Content -->
-        <div class="flex-1 overflow-auto p-6">
-          <router-view />
-        </div>
-
-        <!-- Bottom Navigation -->
-        <div class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
-          <div class="flex items-center justify-between">
-            <!-- Previous Button -->
-            <button
-              v-if="canGoPrevious"
-              type="button"
-              class="btn-secondary flex items-center gap-2"
-              @click="goToPreviousStep"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
-              {{ previousStep?.name }}
-            </button>
-            <div v-else />
-
-            <!-- Complete & Next Button -->
-            <div class="flex items-center gap-3">
-              <button
-                v-if="nextStep"
-                type="button"
-                :disabled="!canGoNext && isUpdating"
-                :class="[
-                  'flex items-center gap-2',
-                  canGoNext ? 'btn-primary' : 'btn-secondary',
-                ]"
-                @click="canGoNext ? goToNextStep() : completeCurrentStep()"
-              >
-                <span v-if="isUpdating" class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white" />
-                <template v-else>
-                  {{ canGoNext ? t('workflow.next') : t('workflow.completeStep') }}
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </template>
-              </button>
-              <span v-else class="text-green-600 dark:text-green-400 font-medium flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                {{ t('workflow.completed') }}
-              </span>
-            </div>
-          </div>
-        </div>
+      <div v-else class="h-full">
+        <router-view />
       </div>
     </main>
   </div>

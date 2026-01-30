@@ -24,7 +24,7 @@ class OpenAICompatibleClient:
         api_key: str,
         base_url: str = "https://api.openai.com/v1",
         model_name: str = "gpt-4o-mini",
-        timeout: float = 300.0,  # 5分钟超时
+        timeout: float = 600.0,  # 10分钟超时
     ):
         from openai import AsyncOpenAI
         import httpx
