@@ -615,7 +615,7 @@ export default {
             },
             sceneGeneration: {
                 title: 'Scene Generation',
-                description: 'Generate stunning visuals for each scene with consistent character appearance using ComfyUI.',
+                description: 'Generate stunning visuals for each scene with consistent character appearance using AI.',
             },
             voiceSynthesis: {
                 title: 'Voice Synthesis',
@@ -820,10 +820,6 @@ export default {
         dangerZone: 'Danger Zone',
         saveChanges: 'Save Changes',
         changesSaved: 'Changes Saved',
-        comfyuiConfig: 'ComfyUI Configuration',
-        apiUrl: 'API URL',
-        apiKey: 'API Key',
-        saveConfiguration: 'Save Configuration',
     },
 
     errors: {

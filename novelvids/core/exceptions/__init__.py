@@ -36,11 +36,6 @@ class AuthorizationError(NovelVidsError):
     pass
 
 
-class ComfyUIError(NovelVidsError):
-    """ComfyUI API error exception."""
-
-    pass
-
 
 class StorageError(NovelVidsError):
     """Storage operation error exception."""

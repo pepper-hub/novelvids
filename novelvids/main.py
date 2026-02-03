@@ -82,7 +82,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.app_name,
         version=settings.app_version,
-        description="AI Novel Video Generator - Generate videos from novels using ComfyUI",
+        description="AI Novel Video Generator - Generate videos from novels using AI",
         lifespan=lifespan,
         docs_url="/api/docs",
         redoc_url="/api/redoc",

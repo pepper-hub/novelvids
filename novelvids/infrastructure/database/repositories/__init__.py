@@ -11,7 +11,6 @@ from novelvids.infrastructure.database.models import (
     AssetModel,
     ChapterAssetModel,
     ChapterModel,
-    ComfyUIWorkflowModel,
     NovelModel,
     SceneModel,
     UsageRecordModel,
@@ -164,17 +163,6 @@ class TortoiseUsageRecordRepository(TortoiseRepository[UsageRecordModel]):
         result = await queryset.annotate(total=Sum("total_cost")).values("total")
         return float(result[0]["total"] or 0) if result else 0.0
 
-
-class TortoiseWorkflowRepository(TortoiseRepository[ComfyUIWorkflowModel]):
-    """Tortoise ORM repository for workflows."""
-
-    model_class = ComfyUIWorkflowModel
-
-    async def get_by_category(self, category: str) -> list[ComfyUIWorkflowModel]:
-        return await self.model_class.filter(category=category)
-
-    async def get_default(self, category: str) -> ComfyUIWorkflowModel | None:
-        return await self.model_class.get_or_none(category=category, is_default=True)
 
 
 class TortoiseAssetRepository(TortoiseRepository[AssetModel]):

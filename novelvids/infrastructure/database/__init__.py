@@ -8,7 +8,6 @@ from novelvids.infrastructure.database.repositories import (
     TortoiseUsageRecordRepository,
     TortoiseUserRepository,
     TortoiseVideoRepository,
-    TortoiseWorkflowRepository,
 )
 
 __all__ = [
@@ -20,5 +19,4 @@ __all__ = [
     "TortoiseVideoRepository",
     "TortoiseUserRepository",
     "TortoiseUsageRecordRepository",
-    "TortoiseWorkflowRepository",
 ]

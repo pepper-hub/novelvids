@@ -615,7 +615,7 @@ export default {
             },
             sceneGeneration: {
                 title: '场景生成',
-                description: '使用 ComfyUI 为每个场景生成惊艳的视觉效果，保持一致的角色形象。',
+                description: '使用 AI 为每个场景生成惊艳的视觉效果，保持一致的角色形象。',
             },
             voiceSynthesis: {
                 title: '语音合成',
@@ -820,10 +820,6 @@ export default {
         dangerZone: '危险区域',
         saveChanges: '保存更改',
         changesSaved: '更改已保存',
-        comfyuiConfig: 'ComfyUI 配置',
-        apiUrl: 'API 地址',
-        apiKey: 'API 密钥',
-        saveConfiguration: '保存配置',
     },
 
     errors: {

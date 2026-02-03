@@ -50,24 +50,6 @@ class RedisSettings(BaseSettings):
         return f"redis://{auth}{self.host}:{self.port}/{self.db}"
 
 
-class ComfyUISettings(BaseSettings):
-    """ComfyUI API configuration settings."""
-
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        env_prefix="COMFYUI_",
-        extra="ignore",
-    )
-
-    base_url: str = Field(default="http://localhost:8188")
-    api_key: str | None = Field(default=None)
-    timeout: int = Field(default=300, description="Request timeout in seconds")
-    max_retries: int = Field(default=3)
-    use_cloud: bool = Field(default=False, description="Use cloud ComfyUI API")
-    cloud_base_url: str | None = Field(default=None)
-    cloud_api_key: str | None = Field(default=None)
-
 
 class StorageSettings(BaseSettings):
     """Storage configuration settings."""
@@ -182,7 +164,6 @@ class Settings(BaseSettings):
 
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
     redis: RedisSettings = Field(default_factory=RedisSettings)
-    comfyui: ComfyUISettings = Field(default_factory=ComfyUISettings)
     storage: StorageSettings = Field(default_factory=StorageSettings)
     billing: BillingSettings = Field(default_factory=BillingSettings)
     jwt: JWTSettings = Field(default_factory=JWTSettings)

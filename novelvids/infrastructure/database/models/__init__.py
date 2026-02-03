@@ -420,19 +420,6 @@ class UsageRecordModel(BaseModel):
         table = "usage_records"
 
 
-class ComfyUIWorkflowModel(BaseModel):
-    """ComfyUI 工作流配置模型。"""
-
-    name = fields.CharField(max_length=100, unique=True, index=True)
-    description = fields.TextField(null=True)
-    workflow_json = fields.JSONField()
-    category = fields.CharField(max_length=50, default="general", index=True)
-    is_default = fields.BooleanField(default=False)
-    metadata = fields.JSONField(default=dict)
-
-    class Meta:
-        table = "comfyui_workflows"
-
 
 class ExtractionTaskType(StrEnum):
     """提取任务类型。"""

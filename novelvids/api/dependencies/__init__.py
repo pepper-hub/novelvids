@@ -94,7 +94,3 @@ def get_usage_repository():
     from novelvids.infrastructure.database.repositories import TortoiseUsageRecordRepository
     return TortoiseUsageRecordRepository()
 
-
-def get_workflow_repository():
-    from novelvids.infrastructure.database.repositories import TortoiseWorkflowRepository
-    return TortoiseWorkflowRepository()

@@ -28,20 +28,6 @@ const { t } = useI18n()
           </form>
         </div>
 
-        <div class="card p-6">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.comfyuiConfig') }}</h2>
-          <form class="space-y-4">
-            <div>
-              <label class="label">{{ t('settings.apiUrl') }}</label>
-              <input type="text" class="input" placeholder="http://localhost:8188" />
-            </div>
-            <div>
-              <label class="label">{{ t('settings.apiKey') }} ({{ t('common.optional') }})</label>
-              <input type="password" class="input" :placeholder="t('settings.apiKey')" />
-            </div>
-            <button type="submit" class="btn-primary">{{ t('settings.saveConfiguration') }}</button>
-          </form>
-        </div>
       </div>
 
       <div class="space-y-6">

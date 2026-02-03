@@ -255,7 +255,7 @@ function closeCreateModal(): void {
             </div>
             <div>
               <p class="font-medium text-gray-900 dark:text-white">{{ t('nav.settings') }}</p>
-              <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.comfyuiConfig') }}</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.general') }}</p>
             </div>
           </router-link>
         </div>
