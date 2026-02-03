@@ -44,8 +44,6 @@ cp .env.example .env  # Configure API keys
 # Frontend
 cd frontend && npm install
 
-# Initialize database
-aerich upgrade
 ```
 
 ### Run

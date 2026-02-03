@@ -132,6 +132,10 @@ def create_app() -> FastAPI:
     media_path.mkdir(parents=True, exist_ok=True)
     app.mount("/media", StaticFiles(directory=str(media_path)), name="media")
 
+    # Ensure data directory exists for SQLite database
+    data_path = Path("./data")
+    data_path.mkdir(parents=True, exist_ok=True)
+
     return app
 
 

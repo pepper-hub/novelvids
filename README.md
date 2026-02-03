@@ -43,9 +43,6 @@ cp .env.example .env  # 配置 API 密钥
 
 # 前端
 cd frontend && npm install
-
-# 初始化数据库
-aerich upgrade
 ```
 
 ### 启动
