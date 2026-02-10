@@ -139,3 +139,50 @@ async def test_api_delete_asset(client: AsyncClient):
 
     exists = await Asset.filter(id=asset.id).exists()
     assert not exists
+
+
+@pytest.mark.asyncio
+async def test_api_reference_asset(client: AsyncClient):
+    """提交参考图生成任务。"""
+    from models.config import AiModelConfig
+    from models.ai_task import AiTask
+    from utils.enums import AiTaskTypeEnum, TaskStatusEnum
+
+    novel = await Novel.create(name="Ref API Novel", author="Author")
+    asset = await Asset.create(
+        novel_id=novel.id,
+        asset_type=AssetTypeEnum.person.value,
+        canonical_name="API参考图测试",
+    )
+    await AiModelConfig.create(
+        task_type=AiTaskTypeEnum.reference_image.value,
+        name="test-ref-api",
+        base_url="https://mock.api.com/v1",
+        api_key="sk-test",
+        model="mock-model",
+        is_active=True,
+    )
+
+    response = await client.get(f"/api/asset/reference/{asset.id}")
+    assert response.status_code == 200, response.text
+
+    data = response.json()["data"]
+    assert data["task_type"] == AiTaskTypeEnum.reference_image.value
+    assert data["status"] == TaskStatusEnum.pending.value
+    print(f"    GET /api/asset/reference/{asset.id} -> 200, 任务 id={data['id']}, status=pending")
+
+
+@pytest.mark.asyncio
+async def test_api_reference_no_config(client: AsyncClient):
+    """无参考图配置时返回 404。"""
+    novel = await Novel.create(name="No Config Ref API Novel", author="Author")
+    asset = await Asset.create(
+        novel_id=novel.id,
+        asset_type=AssetTypeEnum.person.value,
+        canonical_name="API无配置测试",
+    )
+
+    response = await client.get(f"/api/asset/reference/{asset.id}")
+    body = response.json()
+    assert body["code"] == 404
+    print(f"    GET /api/asset/reference/{asset.id} -> 404: {body['message']}")

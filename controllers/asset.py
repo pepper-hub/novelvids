@@ -32,14 +32,17 @@ class AssetController(CRUDBase[Asset, AssetCreate, AssetUpdate]):
         if base_query is None:
             base_query = self.model.all()
 
-        # 处理 chapter_id 过滤
+        # 处理 chapter_id 过滤（Python 端过滤 JSON 数组，兼容 SQLite）
         # 前端传参: /api/asset?chapter_id=3
         if params.filters and "chapter_id" in params.filters:
             try:
                 chapter_id = int(params.filters.pop("chapter_id"))
-                # JSON 数组包含查询：source_chapters 包含 chapter_id
-                # 注意：这在 SQLite/PostgreSQL 中通常有效，底层会被转为 JSON_CONTAINS 或类似逻辑
-                base_query = base_query.filter(source_chapters__contains=chapter_id)
+                all_assets = await self.model.all().values("id", "source_chapters")
+                matching_ids = [
+                    a["id"] for a in all_assets
+                    if chapter_id in (a["source_chapters"] or [])
+                ]
+                base_query = base_query.filter(id__in=matching_ids)
             except (ValueError, TypeError):
                 pass  # 忽略无效的 chapter_id
 

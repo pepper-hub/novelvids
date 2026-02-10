@@ -1,4 +1,5 @@
 import pytest
+from fastapi import HTTPException
 from tortoise.contrib.test import finalizer, initializer
 from controllers.novel import novel_controller
 from models.novel import Novel
@@ -76,3 +77,34 @@ async def test_split_novel_chapters(sql_profiler):
 
     print(f"\n[Split] SQL Count: {p.query_count}")
     # Verify SQL efficiency (should likely insert chapters in batch or loop)
+
+
+@pytest.mark.asyncio
+async def test_split_novel_no_chapters_recognized():
+    """无法识别章节时，整个小说作为一个章节。"""
+    # 没有明确章节标记的内容
+    content = "这是一段没有任何章节标记的纯文本内容，NLP无法识别出章节分割点。"
+    novel = await Novel.create(name="No Chapter Novel", author="Author", content=content)
+
+    result = await novel_controller.split(novel.id)
+    assert result.total_chapters == 1
+
+    chapters = await Chapter.filter(novel_id=novel.id).all()
+    assert len(chapters) == 1
+    assert chapters[0].name == "第一章"
+    assert chapters[0].content == content
+    print(f"    无法识别章节，默认整体作为一个章节: name='{chapters[0].name}'")
+
+
+@pytest.mark.asyncio
+async def test_split_novel_already_has_chapters():
+    """已有章节时禁止再次分章。"""
+    content = "第1章 开始\n内容"
+    novel = await Novel.create(name="Already Split Novel", author="Author", content=content)
+    await Chapter.create(novel_id=novel.id, number=1, name="第1章 开始", content="内容")
+
+    with pytest.raises(HTTPException) as exc_info:
+        await novel_controller.split(novel.id)
+    assert exc_info.value.status_code == 400
+    assert "已有章节" in exc_info.value.detail
+    print(f"    已有章节时拒绝分章: {exc_info.value.detail}")

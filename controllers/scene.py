@@ -1,31 +1,59 @@
 from utils.crud import CRUDBase
 from models.scene import Scene
 from schemas.scene import SceneCreate, SceneUpdate
+from models.chapter import Chapter
+from models.ai_task import AiTask
+from controllers.config import ai_model_config_controller
+from services.ai_task_executor import ai_task_executor
+from utils.enums import AiTaskTypeEnum, TaskStatusEnum
+from fastapi import HTTPException
 
 
 class SceneController(CRUDBase[Scene, SceneCreate, SceneUpdate]):
     def __init__(self):
         super().__init__(model=Scene)
 
-    async def update(self, ncene_id: int, obj_in: SceneUpdate) -> Scene:
-        instance = await self.get(ncene_id)
-        return await super().update(instance, obj_in)
+    async def _get_with_assets(self, instance_id: int) -> Scene:
+        """封装统一的预加载查询"""
+        # 这里的 get 调用基类的 get_object_or_404
+        instance = await self.get(instance_id)
+        await instance.fetch_related("assets")
+        return instance
 
-    async def patch(self, ncene_id: int, obj_in: SceneUpdate) -> Scene:
-        instance = await self.get(ncene_id)
-        return await super().patch(instance, obj_in)
+    async def create(self, obj_in: SceneCreate, **kwargs) -> Scene:
+        instance = await super().create(obj_in, **kwargs)
+        # 直接在当前实例上 fetch，无需重新数据库查询
+        await instance.fetch_related("assets")
+        return instance
+    
+    async def _perform_update(self, scene_id: int, obj_in: SceneUpdate, method: str) -> Scene:
+        """
+        统一处理 update 和 patch 的内部逻辑
+        method: 'update' | 'patch'
+        """
+        instance = await self.get(scene_id)
+        
+        if method == "patch":
+            instance = await super().patch(instance, obj_in)
+        else:
+            instance = await super().update(instance, obj_in)
+            
+        # 使用 fetch_related 填充已有的实例，避免重复执行 SELECT ... WHERE id = ...
+        await instance.fetch_related("assets")
+        return instance
 
-    async def remove(self, ncene_id: int) -> None:
-        instance = await self.get(ncene_id)
+    async def update(self, scene_id: int, obj_in: SceneUpdate) -> Scene:
+        return await self._perform_update(scene_id, obj_in, "update")
+
+    async def patch(self, scene_id: int, obj_in: SceneUpdate) -> Scene:
+        return await self._perform_update(scene_id, obj_in, "patch")
+
+    async def remove(self, scene_id: int) -> None:
+        instance = await self.get(scene_id)
         await super().remove(instance)
 
-    async def create(self, chapter_id: int):
+    async def generate(self, chapter_id: int):
         """提交分镜生成任务，返回任务记录供前端轮询。"""
-        from models import Chapter, AiTask
-        from controllers.ai_model_config import ai_model_config_controller
-        from services.ai_task_executor import ai_task_executor
-        from utils.enums import AiTaskTypeEnum, TaskStatusEnum
-        from fastapi import HTTPException
 
         chapter = await Chapter.get(id=chapter_id)
 

@@ -29,7 +29,7 @@ class NovelController(CRUDBase[Novel, NovelCreate, NovelUpdate]):
         novel = await self.get(novel_id)
 
         # 如果已经有章节了，禁止使用此方法
-        if await novel.chapters is None:
+        if await novel.chapters:
             raise HTTPException(400, detail="已有章节，不支持分章。")
 
         novel_text = NovelText.from_string(novel.content)

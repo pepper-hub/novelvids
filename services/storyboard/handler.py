@@ -2,7 +2,9 @@ import time
 from typing import List
 from openai import AsyncOpenAI
 
-from models import Chapter, Asset, Scene
+from models.chapter import Chapter
+from models.asset import Asset
+from models.scene import Scene
 from services.ai_task_executor import BaseTaskHandler
 from services.storyboard.generator import generate_storyboard
 from schemas.scene import SceneEntity
@@ -34,7 +36,7 @@ class StoryboardTaskHandler(BaseTaskHandler):
         # 2. 构建实体上下文
         entities = [
             SceneEntity(
-                name=asset.name,
+                name=asset.canonical_name,
                 aliases=asset.aliases or [],
                 description=asset.description or asset.base_traits or ""
             )
@@ -92,7 +94,7 @@ class StoryboardTaskHandler(BaseTaskHandler):
 
         for shot in storyboard.shots:
             # 构建 prompt JSON 对象
-            prompt = {
+            prompt_params = {
                 "visual_prose": shot.visual_prose,
                 "actions": shot.actions,
                 "format_and_look": shot.format_and_look,
@@ -127,12 +129,23 @@ class StoryboardTaskHandler(BaseTaskHandler):
             # 如果有拒绝信息，添加到 metadata
             if "refusal" in api_metadata:
                 scene_metadata["refusal"] = api_metadata["refusal"]
-
+            # 评价成prompt字符串
+            prompt = (
+                f"Visual Prose: {shot.visual_prose}\n"
+                f"Actions: {shot.actions}\n"
+                f"Format and Look: {shot.format_and_look}\n"
+                f"Lenses and Filtration: {shot.lenses_and_filtration}\n"
+                f"Lighting and Atmosphere: {shot.lighting_and_atmosphere}\n"
+                f"Grade and Palette: {shot.grade_and_palette}\n"
+                f"Camera Movement: {shot.camera_movement}\n"
+                f"Sound Design: {shot.sound_design}"
+            )
             # 创建 Scene 记录
             scene = await Scene.create(
                 chapter_id=chapter_id,
                 sequence=shot.sequence,
                 description=shot.description,
+                prompt_params=prompt_params,
                 prompt=prompt,
                 duration=duration_value,
                 metadata=scene_metadata

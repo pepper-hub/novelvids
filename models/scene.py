@@ -26,7 +26,8 @@ class Scene(AbstractBaseModel):
         through="scene_assets",  # 显式指定中间表名
         description="该镜头中涉及的所有资产/角色"
     )
-    prompt = fields.JSONField(default=dict, description="提示词")
+    prompt_params = fields.JSONField(default=dict, null=True, description="提示词")
+    prompt = fields.TextField(null=True, description="生成提示词")
     duration = fields.FloatField(default=0.0)
     status = fields.IntField(default=TaskStatusEnum.pending.value, db_index=True)
     metadata = fields.JSONField(default=dict, description="元数据")

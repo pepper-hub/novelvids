@@ -15,6 +15,18 @@ class SceneEntity(BaseModel):
     description: str = Field(..., description="该实体的视觉描述字符串")
 
 
+# --- Asset 侧模型 ---
+class AssetSimple(BaseModel):
+    """用于在 Scene 中嵌套展示资产的简化模型"""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int = Field(..., description="资产ID")
+    asset_type: AssetTypeEnum = Field(..., description=AssetTypeEnum.__doc__)
+    description: Optional[str] = Field(None, description="详细描述")
+    base_traits: Optional[str] = Field(None, description="固有特征 (英文, 用于 prompt)")
+    is_global: Optional[bool] = Field(None, description="是否全局资产")
+
+
 class SoraScenePromptConfig(BaseModel):
     """生成视频分镜的提示词配置 - Sora"""
     sequence: int = Field(..., description="分镜序列号")
@@ -76,7 +88,7 @@ class SceneProperties(BaseModel):
     """
     sequence: Optional[int] = Field(None, description="分镜序列号")
     description: Optional[str] = Field(None, description="描述")
-    prompt: Optional[SoraScenePromptConfig] = Field(None, description="提示词")
+    prompt: Optional[str] = Field(None, description="提示词")
     duration: Optional[float] = Field(None, description="时长")
     status: Optional[TaskStatusEnum] = Field(None, description=TaskStatusEnum.__doc__)
 
@@ -88,42 +100,37 @@ class SceneFullProperties(SceneProperties):
     """
     metadata: Optional[Any] = Field(None, description="元数据")
     asset_ids: Optional[list[int]] = Field(None, description="说话角色IDs，关联资产表")
+    assets: Optional[list[AssetSimple]] = Field(None, description="该镜头涉及的资产列表")
 
 
-# --- 输入 Schema (In-bound) ---
-
-class SceneCreate(BaseModel):
+class SceneGenerateCreate(BaseModel):
     """创建请求：chapter_id 必填"""
     chapter_id: int = Field(..., description="所属章节")
     model: VideoModelTypeEnum = Field(..., description=VideoModelTypeEnum.__doc__)
 
-class SceneUpdate(SceneFullProperties):
-    """全量更新"""
+# --- 输入 Schema (In-bound) ---
+
+class SceneCreate(SceneFullProperties):
+    """创建请求：chapter_id 必填"""
     chapter_id: int = Field(..., description="所属章节")
     sequence: int = Field(..., description="分镜序列号")
-    prompt: SoraScenePromptConfig = Field(..., description="提示词配置")
+    prompt: str = Field(..., description="提示词配置")
+
+
+class SceneUpdate(SceneCreate):
+    """全量更新"""
+    pass
 
 
 class ScenePatch(SceneFullProperties):
     """局部更新：全字段可选"""
     chapter_id: Optional[int] = Field(None, description="所属章节")
     sequence: Optional[int] = Field(None, description="分镜序列号")
-    prompt: Optional[SoraScenePromptConfig] = Field(None, description="提示词配置")
+    prompt: Optional[str] = Field(None, description="提示词配置")
 
 
 
 # --- 输出 Schema (Out-bound) ---
-
-# --- Asset 侧模型 ---
-class AssetSimple(BaseModel):
-    """用于在 Scene 中嵌套展示资产的简化模型"""
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int = Field(..., description="资产ID")
-    asset_type: AssetTypeEnum = Field(..., description=AssetTypeEnum.__doc__)
-    description: Optional[str] = Field(None, description="详细描述")
-    base_traits: Optional[str] = Field(None, description="固有特征 (英文, 用于 prompt)")
-    is_global: Optional[bool] = Field(None, description="是否全局资产")
 
 
 class SceneBriefOut(SceneProperties, BaseResponse):
@@ -142,4 +149,4 @@ class SceneOut(SceneFullProperties, BaseResponse):
     model_config = ConfigDict(from_attributes=True)
 
     id: int = Field(..., description="分镜ID")
-    assets: Optional[list[AssetSimple]] = Field(None, description="该镜头涉及的资产列表")
+    prompt_params: Optional[SoraScenePromptConfig] = Field(None, description="提示词参数配置")
