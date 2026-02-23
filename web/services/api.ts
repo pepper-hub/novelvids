@@ -49,7 +49,7 @@ class ApiService {
     return request(`/novel/${id}`, { method: 'DELETE' });
   }
   splitNovel(id: number): Promise<SingleResponse<Novel>> {
-    return request(`/novel/${id}/split`, { method: 'POST' });
+    return request(`/novel/${id}/split`);
   }
 
   // --- Chapters ---
