@@ -10,7 +10,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select"
-import { Film, Video, Loader2, RefreshCw } from "lucide-react"
+import { Film, Video, Loader2, RefreshCw, AlertCircle } from "lucide-react"
 import { api } from "@/services/api"
 import type { Scene, Video as VideoType } from "@/types"
 import { TaskStatusEnum, VideoModelTypeEnum } from "@/types"
@@ -42,7 +42,7 @@ export const StepStudio = ({ chapterId }: StepStudioProps) => {
   const [generating, setGenerating] = useState(false)
   const [loading, setLoading] = useState(true)
   const [selectedModel, setSelectedModel] = useState<number>(
-    VideoModelTypeEnum.VEO_3
+    VideoModelTypeEnum.SEEDANCE
   )
 
   const loadScenes = async () => {
@@ -101,7 +101,7 @@ export const StepStudio = ({ chapterId }: StepStudioProps) => {
       if (finished.status === TaskStatusEnum.COMPLETED) {
         toast.success("视频生成完成")
       } else {
-        toast.error("视频生成失败")
+        toast.error(finished.metadata?.error || "视频生成失败")
       }
     } catch (err) {
       toast.error((err as Error).message || "视频生成失败")
@@ -215,6 +215,19 @@ export const StepStudio = ({ chapterId }: StepStudioProps) => {
                     {statusLabel(latestVideo.status)}
                   </Badge>
                 </div>
+              ) : latestVideo && latestVideo.status === TaskStatusEnum.FAILED ? (
+                <div className="flex flex-col items-center gap-3 text-muted-foreground max-w-md text-center">
+                  <AlertCircle className="h-10 w-10 text-red-500" />
+                  <p className="text-sm font-medium text-red-400">视频生成失败</p>
+                  {latestVideo.metadata?.error && (
+                    <p className="text-xs text-red-400/80 bg-red-500/10 rounded-lg px-4 py-2">
+                      {latestVideo.metadata.error}
+                    </p>
+                  )}
+                  <Badge variant="secondary">
+                    {modelLabel(latestVideo.model_type)}
+                  </Badge>
+                </div>
               ) : (
                 <div className="flex flex-col items-center gap-3 text-muted-foreground">
                   <Film className="h-12 w-12" />
@@ -305,6 +318,11 @@ export const StepStudio = ({ chapterId }: StepStudioProps) => {
                             {statusLabel(video.status)}
                           </Badge>
                         </div>
+                        {video.status === TaskStatusEnum.FAILED && video.metadata?.error && (
+                          <p className="text-xs text-red-400 line-clamp-2">
+                            {video.metadata.error}
+                          </p>
+                        )}
                       </Card>
                     ))}
                   </div>

@@ -53,6 +53,8 @@ export interface Asset {
   description?: string;
   base_traits?: string;
   main_image?: string;
+  angle_image_1?: string;
+  angle_image_2?: string;
   is_global?: boolean;
   created_at: string;
   updated_at: string;
@@ -80,6 +82,7 @@ export interface Video {
   external_task_id?: string;
   status: TaskStatusEnum;
   progress?: number;
+  metadata?: Record<string, any>;
   created_at: string;
   updated_at: string;
 }
@@ -88,6 +91,7 @@ export interface AiTask {
   id: string;
   task_type: number;
   status: TaskStatusEnum;
+  error_message?: string;
   created_at: string;
 }
 

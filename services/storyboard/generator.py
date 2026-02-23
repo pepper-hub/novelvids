@@ -19,7 +19,7 @@ async def generate_storyboard(
     # 构建实体上下文
     entities_context = ""
     for e in entities:
-        entities_context += f"- Entity Name: {e.name}\n  Aliases: {', '.join(e.aliases)}\n  Visual Description: {e.description} (RULE: DO NOT re-describe this look, simply use @{e.name})\n\n"
+        entities_context += f"- Entity Name: {e.name}\n  Aliases: {', '.join(e.aliases)}\n  Visual Description: {e.description} (RULE: DO NOT re-describe this look, simply use @{{{e.name}}})\n\n"
 
     # 系统提示词 (System Prompt) - 融入了摄影指导思维
     system_prompt = f"""
@@ -31,7 +31,9 @@ Your goal is to break down a narrative text into a "Sora 2 Ultra-Detailed Storyb
 - **Entities**: Pre-defined characters/places.
 
 ### 2. CRITICAL RULE: ENTITY BINDING
-- When the narrative mentions a defined entity (or its alias), you MUST refer to it as `@{{Entity Name}}` in `visual_prose` and `actions`.
+- When the narrative mentions a defined entity (or its alias), you MUST refer to it using the EXACT syntax `@{{EXACT Entity Name}}` with curly braces in `visual_prose` and `actions`.
+- Entity names MUST be copied EXACTLY as listed below — do NOT abbreviate, truncate, or paraphrase them.
+- Example: if entity is "Rabbit Cloth Doll", write `@{{Rabbit Cloth Doll}}`, NOT `@{{Rabbit Cloth}}` or `@{{Rabbit}}`.
 - **NEVER** generate visual descriptions for `@{{Entity Name}}` (the rendering engine handles this).
 - **ALWAYS** generate lavish, microscopic visual details for *anything else* (props, background textures, nameless extras).
 
@@ -90,9 +92,9 @@ Generate the storyboard now.
 
         # 详细的 token 使用信息（如果有）
         if hasattr(usage, 'prompt_tokens_details') and usage.prompt_tokens_details:
-            metadata["usage"]["prompt_tokens_details"] = usage.prompt_tokens_details
+            metadata["usage"]["prompt_tokens_details"] = usage.prompt_tokens_details.model_dump()
         if hasattr(usage, 'completion_tokens_details') and usage.completion_tokens_details:
-            metadata["usage"]["completion_tokens_details"] = usage.completion_tokens_details
+            metadata["usage"]["completion_tokens_details"] = usage.completion_tokens_details.model_dump()
 
     # 检查是否有拒绝信息
     if hasattr(completion.choices[0].message, 'refusal') and completion.choices[0].message.refusal:

@@ -3,7 +3,16 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Sparkles, Loader2, User, MapPin, Box } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Sparkles, Loader2, User, MapPin, Box, Pencil, Trash2 } from "lucide-react"
 import { api } from "@/services/api"
 import type { Asset, AiTask } from "@/types"
 import { AssetTypeEnum, TaskStatusEnum } from "@/types"
@@ -35,6 +44,16 @@ export const StepExtraction = ({ chapterId, novelId }: StepExtractionProps) => {
   const [loading, setLoading] = useState(true)
   const [extracting, setExtracting] = useState(false)
 
+  // Edit dialog state
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null)
+  const [editForm, setEditForm] = useState({
+    canonical_name: "",
+    aliases: "",
+    description: "",
+    base_traits: "",
+  })
+  const [saving, setSaving] = useState(false)
+
   const loadAssets = async () => {
     try {
       setLoading(true)
@@ -59,13 +78,56 @@ export const StepExtraction = ({ chapterId, novelId }: StepExtractionProps) => {
       if (task.status === TaskStatusEnum.COMPLETED) {
         toast.success("实体提取完成")
       } else {
-        toast.error("实体提取失败")
+        toast.error(task.error_message || "实体提取失败")
       }
       await loadAssets()
     } catch (err) {
       toast.error((err as Error).message || "实体提取失败")
     } finally {
       setExtracting(false)
+    }
+  }
+
+  const handleEditOpen = (asset: Asset) => {
+    setEditingAsset(asset)
+    setEditForm({
+      canonical_name: asset.canonical_name || "",
+      aliases: asset.aliases?.join(", ") || "",
+      description: asset.description || "",
+      base_traits: asset.base_traits || "",
+    })
+  }
+
+  const handleEditSave = async () => {
+    if (!editingAsset) return
+    try {
+      setSaving(true)
+      await api.updateAsset(editingAsset.id, {
+        canonical_name: editForm.canonical_name.trim(),
+        aliases: editForm.aliases
+          ? editForm.aliases.split(/[,，]/).map((s) => s.trim()).filter(Boolean)
+          : [],
+        description: editForm.description.trim() || undefined,
+        base_traits: editForm.base_traits.trim() || undefined,
+      })
+      toast.success("资产已更新")
+      setEditingAsset(null)
+      await loadAssets()
+    } catch (err) {
+      toast.error((err as Error).message || "更新失败")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async (asset: Asset) => {
+    if (!confirm(`确定要删除「${asset.canonical_name}」吗？`)) return
+    try {
+      await api.deleteAsset(asset.id)
+      toast.success("已删除")
+      await loadAssets()
+    } catch (err) {
+      toast.error((err as Error).message || "删除失败")
     }
   }
 
@@ -152,7 +214,7 @@ export const StepExtraction = ({ chapterId, novelId }: StepExtractionProps) => {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {section.data.map((asset) => (
-                      <Card key={asset.id}>
+                      <Card key={asset.id} className="group relative">
                         <CardContent className="p-4">
                           <div className="flex items-start gap-3">
                             {/* Thumbnail */}
@@ -176,7 +238,7 @@ export const StepExtraction = ({ chapterId, novelId }: StepExtractionProps) => {
                               </p>
                               {asset.aliases && asset.aliases.length > 0 && (
                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                  小名: {asset.aliases.join(", ")}
+                                  别名: {asset.aliases.join(", ")}
                                 </p>
                               )}
                               {asset.description && (
@@ -184,6 +246,26 @@ export const StepExtraction = ({ chapterId, novelId }: StepExtractionProps) => {
                                   {asset.description}
                                 </p>
                               )}
+                            </div>
+
+                            {/* Action buttons - show on hover */}
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-primary"
+                                onClick={() => handleEditOpen(asset)}
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                onClick={() => handleDelete(asset)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
                             </div>
                           </div>
                         </CardContent>
@@ -196,6 +278,78 @@ export const StepExtraction = ({ chapterId, novelId }: StepExtractionProps) => {
           })}
         </div>
       )}
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingAsset} onOpenChange={(open) => !open && setEditingAsset(null)}>
+        <DialogContent className="glass">
+          <DialogHeader>
+            <DialogTitle className="gradient-text text-xl">编辑资产</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">名称</label>
+              <Input
+                value={editForm.canonical_name}
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, canonical_name: e.target.value }))
+                }
+                placeholder="资产名称"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">别名</label>
+              <Input
+                value={editForm.aliases}
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, aliases: e.target.value }))
+                }
+                placeholder="多个别名用逗号分隔"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">描述</label>
+              <Textarea
+                value={editForm.description}
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, description: e.target.value }))
+                }
+                placeholder="详细描述"
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">固有特征 (用于 Prompt)</label>
+              <Textarea
+                value={editForm.base_traits}
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, base_traits: e.target.value }))
+                }
+                placeholder="英文特征描述，用于生成参考图"
+                rows={6}
+                className="font-mono text-sm"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditingAsset(null)} disabled={saving}>
+              取消
+            </Button>
+            <Button
+              onClick={handleEditSave}
+              disabled={!editForm.canonical_name.trim() || saving}
+              className="shadow-lg shadow-primary/20"
+            >
+              {saving && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
+              保存
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -79,8 +79,19 @@ class ApiService {
   deleteAsset(id: number): Promise<SingleResponse<null>> {
     return request(`/asset/${id}`, { method: 'DELETE' });
   }
+  updateAsset(id: number, data: Partial<Asset>): Promise<SingleResponse<Asset>> {
+    return request(`/asset/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
   generateAssetImage(assetId: number): Promise<SingleResponse<AiTask>> {
     return request(`/asset/reference/${assetId}`);
+  }
+  async uploadFiles(files: File[]): Promise<{ data: { total: number; files: { filename: string; file_path: string }[] } }> {
+    const formData = new FormData();
+    files.forEach((f) => formData.append('files', f));
+    const res = await fetch(BASE + '/file/upload', { method: 'POST', body: formData });
+    const json = await res.json();
+    if (json.code !== 0) throw new Error(json.message || 'Upload failed');
+    return json;
   }
 
   // --- Scenes ---
@@ -96,7 +107,7 @@ class ApiService {
   deleteScene(id: number): Promise<SingleResponse<null>> {
     return request(`/scene/${id}`, { method: 'DELETE' });
   }
-  generateScenes(data: { chapter_id: number; model?: number }): Promise<SingleResponse<AiTask>> {
+  generateScenes(data: { chapter_id: number }): Promise<SingleResponse<AiTask>> {
     return request('/scene/generate/', { method: 'POST', body: JSON.stringify(data) });
   }
 

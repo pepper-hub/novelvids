@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from models.config import AiModelConfig
 from schemas.config import AiModelConfigCreate, AiModelConfigUpdate
 from utils.crud import CRUDBase
+from utils.enums import AiTaskTypeEnum
 
 
 class AiModelConfigController(CRUDBase[AiModelConfig, AiModelConfigCreate, AiModelConfigUpdate]):
@@ -52,9 +53,13 @@ class AiModelConfigController(CRUDBase[AiModelConfig, AiModelConfigCreate, AiMod
         """获取某任务类型当前启用的配置。"""
         config = await AiModelConfig.get_or_none(task_type=task_type, is_active=True)
         if config is None:
+            try:
+                name = AiTaskTypeEnum(task_type).nickname
+            except ValueError:
+                name = str(task_type)
             raise HTTPException(
                 status_code=404,
-                detail=f"任务类型 {task_type} 未配置启用的模型",
+                detail=f"请先在「配置」中为「{name}」启用一个模型",
             )
         return config
 

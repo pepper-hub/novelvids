@@ -28,10 +28,8 @@ class StoryboardTaskHandler(BaseTaskHandler):
 
         # 1. 获取章节和相关资产
         chapter = await Chapter.get(id=chapter_id).prefetch_related("novel")
-        assets = await Asset.filter(
-            novel_id=chapter.novel_id,
-            appearances__chapter_number=chapter.number
-        ).distinct()
+        all_assets = await Asset.filter(novel_id=chapter.novel_id)
+        assets = [a for a in all_assets if chapter.number in (a.source_chapters or [])]
 
         # 2. 构建实体上下文
         entities = [

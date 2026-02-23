@@ -32,7 +32,7 @@ export const WorkflowLayout = () => {
       case 2:
         return <StepAssets chapterId={cId} novelId={nId} />
       case 3:
-        return <StepStoryboard chapterId={cId} />
+        return <StepStoryboard chapterId={cId} novelId={nId} />
       case 4:
         return <StepStudio chapterId={cId} />
       default:

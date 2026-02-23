@@ -22,6 +22,7 @@ class VideoBriefOut(BaseResponse):
     model_type: Optional[VideoModelTypeEnum] = Field(None, description="视频模型类型")
     url: Optional[str] = Field(None, description="视频URL")
     status: Optional[TaskStatusEnum] = Field(None, description="状态")
+    metadata: Optional[Any] = Field(None, description="元数据")
 
 
 class VideoOut(BaseResponse):

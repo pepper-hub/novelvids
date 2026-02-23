@@ -3,7 +3,7 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Any, Literal, Optional
 from schemas._base import BaseResponse
-from utils.enums import AssetTypeEnum, TaskStatusEnum, VideoModelTypeEnum
+from utils.enums import AssetTypeEnum, TaskStatusEnum
 
 
 # ===========================
@@ -106,7 +106,6 @@ class SceneFullProperties(SceneProperties):
 class SceneGenerateCreate(BaseModel):
     """创建请求：chapter_id 必填"""
     chapter_id: int = Field(..., description="所属章节")
-    model: VideoModelTypeEnum = Field(..., description=VideoModelTypeEnum.__doc__)
 
 # --- 输入 Schema (In-bound) ---
 
