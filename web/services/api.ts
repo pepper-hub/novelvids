@@ -59,6 +59,9 @@ class ApiService {
   getChapter(id: number): Promise<SingleResponse<Chapter>> {
     return request(`/chapter/${id}`);
   }
+  createChapter(novelId: number, data: { number: number; name: string; content: string }): Promise<SingleResponse<Chapter>> {
+    return request('/chapter', { method: 'POST', body: JSON.stringify({ ...data, novel_id: novelId }) });
+  }
   patchChapter(id: number, data: Partial<Chapter>): Promise<SingleResponse<Chapter>> {
     return request(`/chapter/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
   }
