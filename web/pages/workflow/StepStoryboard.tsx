@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Label } from "@/components/ui/label"
 import {
   Dialog,
   DialogContent,
@@ -11,7 +12,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { Sparkles, Loader2, Edit3, Trash2, GripVertical } from "lucide-react"
+import { Sparkles, Loader2, Edit3, Trash2, GripVertical, Settings2 } from "lucide-react"
 import { api } from "@/services/api"
 import type { Scene, Asset, AiTask } from "@/types"
 import { TaskStatusEnum } from "@/types"
@@ -125,6 +126,13 @@ export const StepStoryboard = ({ chapterId, novelId }: StepStoryboardProps) => {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
 
+  // Generate config dialog state
+  const [showConfigDialog, setShowConfigDialog] = useState(false)
+  const [generateConfig, setGenerateConfig] = useState({
+    shotCount: "",
+    defaultDuration: "4",
+  })
+
   // Edit dialog state
   const [editingScene, setEditingScene] = useState<Scene | null>(null)
   const [editForm, setEditForm] = useState({
@@ -175,10 +183,19 @@ export const StepStoryboard = ({ chapterId, novelId }: StepStoryboardProps) => {
     loadAssets()
   }, [chapterId, novelId])
 
-  const handleGenerate = async () => {
+  const handleGenerate = () => {
+    setShowConfigDialog(true)
+  }
+
+  const handleConfirmGenerate = async () => {
     try {
+      setShowConfigDialog(false)
       setGenerating(true)
-      const res = await api.generateScenes({ chapter_id: chapterId })
+      const res = await api.generateScenes({
+        chapter_id: chapterId,
+        shot_count: generateConfig.shotCount ? parseInt(generateConfig.shotCount) : undefined,
+        default_duration: generateConfig.defaultDuration + "s" as "4s" | "8s",
+      })
       const task = await pollTask(res.data.id)
       if (task.status === TaskStatusEnum.COMPLETED) {
         toast.success("分镜生成完成")
@@ -401,6 +418,66 @@ export const StepStoryboard = ({ chapterId, novelId }: StepStoryboardProps) => {
             >
               {saving && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
               保存
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Generate Config Dialog */}
+      <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
+        <DialogContent className="glass max-w-md">
+          <DialogHeader>
+            <DialogTitle className="gradient-text text-xl flex items-center gap-2">
+              <Settings2 className="h-5 w-5" />
+              分镜生成配置
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="shotCount">分镜数量</Label>
+              <Input
+                id="shotCount"
+                type="number"
+                min="1"
+                max="50"
+                placeholder="留空则由 AI 自动决定"
+                value={generateConfig.shotCount}
+                onChange={(e) => setGenerateConfig((f) => ({ ...f, shotCount: e.target.value }))}
+              />
+              <p className="text-xs text-muted-foreground">
+                可选，1-50 个镜头。留空则 AI 根据内容自动决定
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="defaultDuration">默认时长 (秒)</Label>
+              <Input
+                id="defaultDuration"
+                type="number"
+                min="1"
+                max="20"
+                step="1"
+                placeholder="4"
+                value={generateConfig.defaultDuration}
+                onChange={(e) => setGenerateConfig((f) => ({ ...f, defaultDuration: e.target.value }))}
+              />
+              <p className="text-xs text-muted-foreground">
+                推荐使用 4秒 以获得最佳效果，可输入 1-20 秒
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowConfigDialog(false)}>
+              取消
+            </Button>
+            <Button
+              onClick={handleConfirmGenerate}
+              className="shadow-lg shadow-primary/20"
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              开始生成
             </Button>
           </DialogFooter>
         </DialogContent>

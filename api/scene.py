@@ -11,9 +11,9 @@ router = APIRouter()
 
 
 @router.post("/generate/", summary="AI生成分镜", response_model=ResponseSchema[AiTaskOut])
-async def generate_scene(generate_data: SceneGenerateCreate, background_tasks: BackgroundTasks):
+async def generate_scene(obj_in: SceneGenerateCreate, background_tasks: BackgroundTasks):
     """提交分镜生成任务，返回任务记录供前端轮询"""
-    task = await scene_controller.generate(generate_data.chapter_id)
+    task = await scene_controller.generate(obj_in)
     background_tasks.add_task(ai_task_executor.run, task)
     return ResponseSchema(data=task)
 

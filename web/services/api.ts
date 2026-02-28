@@ -110,7 +110,7 @@ class ApiService {
   deleteScene(id: number): Promise<SingleResponse<null>> {
     return request(`/scene/${id}`, { method: 'DELETE' });
   }
-  generateScenes(data: { chapter_id: number }): Promise<SingleResponse<AiTask>> {
+  generateScenes(data: { chapter_id: number; shot_count?: number; default_duration?: '4s' | '8s' }): Promise<SingleResponse<AiTask>> {
     return request('/scene/generate/', { method: 'POST', body: JSON.stringify(data) });
   }
 

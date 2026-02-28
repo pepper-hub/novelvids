@@ -20,11 +20,15 @@ class StoryboardTaskHandler(BaseTaskHandler):
             base_url: str - API基础URL
             api_key: str - API密钥
             model: str - 模型名称
+            shot_count: int | None - 分镜数量（可选）
+            default_duration: str - 默认时长（"4s" 或 "8s"）
         """
         chapter_id = request_params["chapter_id"]
         base_url = request_params["base_url"]
         api_key = request_params["api_key"]
         model = request_params["model"]
+        shot_count = request_params.get("shot_count")
+        default_duration = request_params.get("default_duration", "4s")
 
         # 1. 获取章节和相关资产
         chapter = await Chapter.get(id=chapter_id).prefetch_related("novel")
@@ -46,12 +50,14 @@ class StoryboardTaskHandler(BaseTaskHandler):
 
         try:
             client = AsyncOpenAI(base_url=base_url, api_key=api_key)
-            
+
             storyboard, api_metadata = await generate_storyboard(
                 client=client,
                 long_text=chapter.content,
                 entities=entities,
-                model=model
+                model=model,
+                shot_count=shot_count,
+                default_duration=default_duration
             )
 
             end_time = time.time()

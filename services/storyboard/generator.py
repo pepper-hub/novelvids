@@ -8,7 +8,9 @@ async def generate_storyboard(
     client: AsyncOpenAI,
     long_text: str,
     entities: List[SceneEntity],
-    model: str
+    model: str,
+    shot_count: int | None = None,
+    default_duration: str = "4s"
 ) -> tuple[Storyboard, dict]:
     """
     调用 OpenAI API 生成分镜板
@@ -21,8 +23,13 @@ async def generate_storyboard(
     for e in entities:
         entities_context += f"- Entity Name: {e.name}\n  Aliases: {', '.join(e.aliases)}\n  Visual Description: {e.description} (RULE: DO NOT re-describe this look, simply use @{{{e.name}}})\n\n"
 
+    # 构建分镜约束条件
+    shot_constraint = ""
+    if shot_count:
+        shot_constraint = f"\n- **IMPORTANT**: Generate exactly {shot_count} shots."
+
     # 系统提示词 (System Prompt) - 融入了摄影指导思维
-    system_prompt = f"""
+    system_prompt_template = """
 You are an elite Cinematographer (DP) and Sora 2 Prompt Engineering Expert.
 Your goal is to break down a narrative text into a "Sora 2 Ultra-Detailed Storyboard".
 
@@ -46,13 +53,20 @@ You must act like a film director using professional equipment. Fill the specifi
 - **Sound**: Diegetic only. Mention LUFS levels, specific textures (leather creaking, snow crunching).
 
 ### 4. SHOT STRUCTURE
-- Duration: Strictly 4s or 8s.
+- Duration: Strictly {duration} only.
 - Pacing: Break long scenes into multiple cuts.
 - Actions: precise timestamps (0.0s-2.0s).
+{shot_constraint}
 
 ### DEFINED ENTITIES LIST
 {entities_context}
 """
+
+    system_prompt = system_prompt_template.format(
+        duration=default_duration,
+        shot_constraint=shot_constraint,
+        entities_context=entities_context
+    )
 
     user_prompt = f"""
 ### NARRATIVE TEXT TO PROCESS

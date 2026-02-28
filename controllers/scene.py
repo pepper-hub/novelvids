@@ -1,6 +1,6 @@
 from utils.crud import CRUDBase
 from models.scene import Scene
-from schemas.scene import SceneCreate, SceneUpdate
+from schemas.scene import SceneCreate, SceneUpdate, SceneGenerateCreate
 from models.chapter import Chapter
 from models.ai_task import AiTask
 from controllers.config import ai_model_config_controller
@@ -52,10 +52,14 @@ class SceneController(CRUDBase[Scene, SceneCreate, SceneUpdate]):
         instance = await self.get(scene_id)
         await super().remove(instance)
 
-    async def generate(self, chapter_id: int):
+    async def generate(self, obj_in):
         """提交分镜生成任务，返回任务记录供前端轮询。"""
+        if not isinstance(obj_in, SceneGenerateCreate):
+            # 兼容旧的调用方式（只传 chapter_id）
+            chapter_id = obj_in
+            obj_in = SceneGenerateCreate(chapter_id=chapter_id)
 
-        chapter = await Chapter.get(id=chapter_id)
+        chapter = await Chapter.get(id=obj_in.chapter_id)
 
         # 1. 获取分镜生成任务的启用配置
         config = await ai_model_config_controller.get_active(
@@ -82,6 +86,8 @@ class SceneController(CRUDBase[Scene, SceneCreate, SceneUpdate]):
             "base_url": config.base_url,
             "api_key": config.api_key,
             "model": config.model,
+            "shot_count": obj_in.shot_count,
+            "default_duration": obj_in.default_duration,
         }
         task = await ai_task_executor.submit(
             AiTaskTypeEnum.storyboard, request_params

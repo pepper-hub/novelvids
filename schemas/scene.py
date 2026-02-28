@@ -104,8 +104,10 @@ class SceneFullProperties(SceneProperties):
 
 
 class SceneGenerateCreate(BaseModel):
-    """创建请求：chapter_id 必填"""
+    """AI生成分镜请求参数"""
     chapter_id: int = Field(..., description="所属章节")
+    shot_count: Optional[int] = Field(None, ge=1, le=50, description="分镜数量，不填则由AI自动决定")
+    default_duration: Literal["4s", "8s"] = Field("4s", description="默认分镜时长")
 
 # --- 输入 Schema (In-bound) ---
 
